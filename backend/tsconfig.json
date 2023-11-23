@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES6",              // Specify the ECMAScript target version
+    "module": "CommonJS",         // Specify module code generation
+    "outDir": "dist",           // Specify the output directory for compiled files
+    "strict": true,               // Enable strict type-checking
+    "esModuleInterop": true,      // Allow default imports from CommonJS modules
+    "skipLibCheck": true,         // Skip type checking of declaration files
+    "forceConsistentCasingInFileNames": true, // Enforce consistent file naming
+    "declaration": true,          // Generate declaration files (.d.ts)
+    "baseUrl": "./src", 
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": false,       
+    "moduleResolution": "node", 
+    "lib": [
+      "esnext"
+    ],      
+    "sourceMap": true             // Generate source maps for debugging
+  },
+  "include": ["../backend/src"],     // Specify the files to include in the compilation
+  "exclude": [
+  "node_modules",
+  "dist"
+  ]     // Specify the files to exclude from compilation
+}
