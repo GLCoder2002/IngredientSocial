@@ -39,7 +39,6 @@ const RichTextEditor: React.FC<IRichTextEditor> = (props) => {
     'list',
     'bullet',
     'link',
-    'image',
   ];
 
   return (
@@ -49,7 +48,7 @@ const RichTextEditor: React.FC<IRichTextEditor> = (props) => {
         onChange={onChange}
         modules={modules}
         formats={formats}
-        placeholder={placeholder || 'Description'}
+        placeholder={placeholder || 'Content'}
       />
     </TextEditorWrapper>
   );
@@ -58,8 +57,10 @@ const RichTextEditor: React.FC<IRichTextEditor> = (props) => {
 export default RichTextEditor;
 
 const TextEditorWrapper = styled.div`
+border: 1px solid #ccc;
+border-radius: 5px;
+overflow: hidden; 
   & .ql-editor {
-    border: 1px #ccc solid;
     background: white;
     padding: 0 10px;
     word-break: break-word;
@@ -67,13 +68,11 @@ const TextEditorWrapper = styled.div`
     resize: vertical;
     min-height: 150px;
     width: 100%;
-    border-radius: 5px;
     overflow: auto;
   }
 
   & .ql-toolbar {
     background: #dbdbdb8b;
-    border: 0.5px solid #ccc;
     border-radius: 5px;
 
     & .ql-picker-options {

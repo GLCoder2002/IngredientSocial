@@ -13,11 +13,12 @@ const validFileType = [
   'image/avif',
   'image/jpg',
   'image/x-icon',
+  'video/mp4'
 ]
 
 const checkFileFunc = (file: any) => {
   const checkType = validFileType.includes(file.type)
-  const checkSize = file.size <= 50000000
+  const checkSize = file.size <= 50*1024*1024
   console.log('size', checkSize, file.size)
   console.log('type', checkType, file.type)
   if (!checkSize || !checkType) {

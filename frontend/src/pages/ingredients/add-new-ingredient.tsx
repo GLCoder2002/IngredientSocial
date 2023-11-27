@@ -37,9 +37,7 @@ export default function AddIngredientModal({
       message.error('Some of your fields are empty!');
       return;
     }
-  
     setLoading(true);
-  
     const formData = new FormData();
     formData.append('name', form.getFieldValue('name'));
     formData.append('category', form.getFieldValue('category'));

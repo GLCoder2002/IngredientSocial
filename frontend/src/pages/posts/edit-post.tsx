@@ -8,8 +8,6 @@ import useWindowSize from '../../utils/useWindowSize'
 import { useEffect, useState } from 'react'
 import useRoleNavigate from 'libs/role-navigate'
 import { useQuery } from 'utils/useQuery'
-import Tags from './create-new-post/tag'
-import HashtagInput from './create-new-post/HastagInput'
 
 const { Title } = Typography
 
@@ -157,15 +155,6 @@ export default function Editpost() {
             unCheckedChildren="Off"
           />
         </Form.Item>
-        <Form.Item label="Category (max: 1)" 
-        rules={[{ required: true, message: "At least one category, please" }]} 
-        >
-          <Tags setCategories={setCategories} selectedKeys={data[0]?.categories?.map((cate:any) => cate._id)} />
-        </Form.Item>
-
-        <FormItem label="HashTags (Optional)" style={{ width: '100%' }}>
-          <HashtagInput />
-        </FormItem>
 
         <Form.Item
           name="agreement"

@@ -1,63 +1,44 @@
-import { ArrowLeftOutlined, PlusOutlined, QuestionCircleOutlined } from '@ant-design/icons'
-import { Button, Card, Checkbox, Divider, Form, Input, Select, Space, Switch, Typography, Upload, message } from 'antd'
-import FormItem from 'antd/es/form/FormItem'
-import { EditorState, convertToRaw } from 'draft-js'
-import draftToHtml from 'draftjs-to-html'
-import { useEffect, useState } from 'react'
+import { ArrowLeftOutlined, InboxOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import { Button, Card, Checkbox, Form, Input, Space, Typography, Upload, message } from 'antd'
+import { useState } from 'react'
 import { Http } from '../../../api/http'
 import useWindowSize from '../../../utils/useWindowSize'
-import HashtagInput from './HastagInput'
-import Tags from './tag'
-import axios from 'axios'
 import useRoleNavigate from 'libs/role-navigate'
-import { useQuery } from 'utils/useQuery'
 import TextEditor from 'components/text-editor/text-editor'
-//import IngredientTable from 'components/ingredient-table'
 import { handleValidateFile, onChangeUpload } from 'components/upload/uploadImage'
+import IngredientTable from './ingredient-table'
+import TermCondition from './condition'
 
 
 const { Title } = Typography
 export default function CreatePost() {
   const [form] = Form.useForm()
   const navigate = useRoleNavigate()
-  const query = useQuery()
-  const defaultEventId = query.get('event')
-
-  const initialState = () => EditorState.createEmpty()
-  const [editorState, setEditorState] = useState(initialState)
+  const [selectedIngredients, setSelectedIngredients] = useState<any>([])
+  // const initialState = () => EditorState.createEmpty()
+  const [editorState, setEditorState] = useState('')
   const [openModal, setOpenModal] = useState(false)
   const [video, setVideo] = useState<any>([])
-  const [hashTags, setHashTag] = useState([])
-  const [categories, setCategories] = useState([])
-  const [isAnonymous, setAnonymous] = useState(false)
-  const [specialEvent, setSpecialEvent] = useState([])
+  const [loading,setLoading] = useState(false)
 
   const onSubmitPost = async () => {
-    
-    const content = draftToHtml(convertToRaw(editorState.getCurrentContent()))
+    setLoading(true)
+    const content = editorState
     if (content.length <= 20) {
       return message.error('Your description is too spacing')
     }
-    const postForm = {
-      title: form.getFieldValue('title'),
-
-      content: `${content}`,
-      categories: categories,
-      isAnonymous: isAnonymous,
-      specialEvent: defaultEventId || form.getFieldValue('specialevent'),
+    const postForm = new FormData()
+    postForm.append('title',form.getFieldValue('title'))
+    postForm.append('content',`${content}`)
+    postForm.append('ingredients',selectedIngredients)
+    if(video.length > 0){
+      postForm.append('video', video[0].originFileObj)
     }
-    if (categories.length === 0) {
-      return message.error('Atleast one category')
-    }
-
-    if (!defaultEventId && !form.getFieldValue('specialevent')) {
-      return message.error('Must be in a special event')
-    }
-    if (!postForm.title || !postForm.content) {
+    if (!form.getFieldValue('title')) {
       return message.error('Please fill the required fields')
     }
-    if (postForm.title.length < 30) {
-      return message.error('Your title is too sparsing')
+    if (form.getFieldValue('title').length < 30) {
+      return message.error('Your title is too spacing')
     }
     if (!form.getFieldValue('agreement')) {
       return message.error('You must agree to the terms and conditions')
@@ -69,6 +50,7 @@ export default function CreatePost() {
         navigate('/')
       })
       .catch(error => message.error(error.message + '. Please try again'))
+      .finally(()=>setLoading(false))
   }
 
   const windowWidth = useWindowSize()
@@ -95,7 +77,7 @@ export default function CreatePost() {
           name="title"
           rules={[
             { required: true, message: "Please input your post's title" },
-            { type: 'string', min: 30, message: 'Your title is too sparsing, at least 30 characters' },
+            { type: 'string', min: 30, message: 'Your title is too spacing, at least 30 characters' },
           ]}
           label="Title"
         >
@@ -105,42 +87,46 @@ export default function CreatePost() {
             maxLength={200}
             showCount
             autoComplete="off"
-          ></Input>
+          >
+          </Input>
         </Form.Item>
+        <Form.Item name='content' label='Content' required>
         <TextEditor editorState={editorState} setEditorState={setEditorState}/>
+        </Form.Item>
         <Form.Item name="ingredient"
-         rules={[
-            { required: true, message: "Please select your ingredients for the recipe" },
-          ]}
+        //  rules={[
+        //     { required: true, message: "Please select your ingredients for the recipe" },
+        //   ]}
         required
         label="Ingredient">
-         {/* // <IngredientTable/> */}
+        <IngredientTable setIngredientSelected={setSelectedIngredients} />
         </Form.Item>
-        <Form.Item
-    name="image"
-    label="Upload image"
-    valuePropName="fileList"
-    labelAlign="left"
-    getValueFromEvent={(e) => {
-      const validFiles = handleValidateFile(e);
-      setVideo(validFiles);
-    }}
-    required
-  >
-    <Upload
-          name="video"
-          listType="picture-card"
-          className="video-uploader"
+      <Form.Item
+        label="Video"
+        name="dragger"
+        valuePropName="fileList"
+        getValueFromEvent={e => {
+          const validFiles = handleValidateFile(e)
+          setVideo(validFiles)
+        }}
+        required
+      >
+        <Upload.Dragger
+          name="files"
           accept="video/*"
           beforeUpload={file => onChangeUpload(file)}
           maxCount={1}
         >
-          <div>
-            <PlusOutlined />
-            <div style={{ marginTop: 8 }}>Upload</div>
-          </div>
-        </Upload>
-  </Form.Item>
+          <p className="ant-upload-drag-icon">
+            <InboxOutlined />
+          </p>
+          <p className="ant-upload-text">Click or drag file to this area to upload</p>
+          <p className="ant-upload-hint">Maximum Size: 50MB</p>
+          <Typography.Text disabled style={{ marginLeft: '10px' }}>
+            Maximum Files: 1
+          </Typography.Text>
+        </Upload.Dragger>
+      </Form.Item>
         <Form.Item
           name="agreement"
           valuePropName="checked"
@@ -164,9 +150,9 @@ export default function CreatePost() {
             </Button>
           </Checkbox>
         </Form.Item>
-        {/* <TermCondition isOpen={openModal} onCloseModal={() => setOpenModal(false)} /> */}
+        <TermCondition isOpen={openModal} onCloseModal={() => setOpenModal(false)} />
         <Form.Item wrapperCol={{ span: 15 }}>
-          <Button type="primary" htmlType="submit" onClick={() => onSubmitPost()} style={{ marginTop: 10 }}>
+          <Button loading={loading} type="primary" htmlType="submit" onClick={() => onSubmitPost()} style={{ marginTop: 10 }}>
             Post
           </Button>
         </Form.Item>

@@ -35,8 +35,9 @@ const postSchema = new Schema<IPost>({
   dislikes: [{ type: Types.ObjectId, default: [], ref: 'User'}],
   comments: [{ type: Types.ObjectId, default: [], ref: 'Comment'}],
   createdAt: { type: Date, default: Date.now },
-  ingredients: [{ type: Types.ObjectId, ref: 'Ingredient', default:[]}],
-},{
+  ingredients: [{ type: Types.ObjectId, default:[], ref: 'Ingredient'}],
+}
+,{
   timestamps:{updatedAt:true}
 })
 

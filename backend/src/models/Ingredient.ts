@@ -15,7 +15,7 @@ const ingredientSchema = new Schema<IIngredient>({
   description: String,
   image: { type: String, required: true },
   category: { type: Types.ObjectId, required:false, ref: 'Category' },
-  posts: [{ type: Types.ObjectId, ref:'Post'}],
+  posts: [{ type: Types.ObjectId, ref:'Post', default:[]}],
 })
 
 const Ingredient: Model<IIngredient> = model<IIngredient>('Ingredient', ingredientSchema)

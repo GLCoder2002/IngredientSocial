@@ -4,6 +4,7 @@ import apiErrorResponse from "../utils/apiErrorResponse"
 import Comment from "../models/Comment"
 import Post, { IPost } from "../models/Post"
 import cloudinary from "../utils/cloudconfig"
+import mongoose from "mongoose"
 
 
 export const createPost = async (req: any, res: any, next: any) => {
@@ -20,8 +21,12 @@ export const createPost = async (req: any, res: any, next: any) => {
       return next(new apiErrorResponse('Please fill the properties of your post', 400))
     }
 
+    if (postBody?.ingredients?.length) {
+      postBody.ingredients = postBody?.ingredients?.split(',')?.map(i => new mongoose.Types.ObjectId(i))
+    }
     const newPost: IPost = Object.assign({}, postBody, { posterId: req.payload.user.id })
     
+
     let savedPost = await Post.create(newPost)
     const user = await User.findById(savedPost.posterId)
     if(postBody.ingredients){
@@ -41,12 +46,12 @@ export const createPost = async (req: any, res: any, next: any) => {
       post: savedPost,
     })
   } catch (err: any) {
-    const urlParts = req.file.path.split('/')
-    const firstPart = urlParts?.find(part => part === "videos");
-    const lastPart = urlParts![urlParts!.length - 1]
-    const lastPartId = lastPart.split(".")[0];
-    const path = `${firstPart}/${lastPartId}`
-    cloudinary.uploader.destroy(path);
+    // const urlParts = req.file.path.split('/')
+    // const firstPart = urlParts?.find(part => part === "videos");
+    // const lastPart = urlParts![urlParts!.length - 1]
+    // const lastPartId = lastPart.split(".")[0];
+    // const path = `${firstPart}/${lastPartId}`
+    // cloudinary.uploader.destroy(path);
     return next(new apiErrorResponse(`${err.message}`, 500))
   }
 }

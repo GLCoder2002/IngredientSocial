@@ -2,7 +2,6 @@ import { createPost, getAllPosts, getTotalPost, postByTime } from '../controller
 import express from 'express'
 import { authProtect, authorize } from '../middlewares/auth'
 import { uploadMulter } from '../utils/cloudconfig'
-import { uploadFile } from '../controllers/upload.controller'
 //import { getPresignedUrl } from '../controllers/upload.controller'
 
 
@@ -18,7 +17,6 @@ postRouter.get('/', authProtect, getAllPosts)
 postRouter.get('/allPosts', authProtect, getAllPosts)
 //postRouter.get('/ideaTotalByDuration', authProtect, ideaTotalByDuration)
 postRouter.post('/create',uploadMulter.single('video'), authProtect, authorize(['user']), createPost)
-postRouter.post('/video',uploadFile, authProtect)
 postRouter.post('/totalPosts', authProtect, getTotalPost)
 postRouter.get('/totalPostByTime', postByTime, authProtect, authorize(['admin']))
 //postRouter.put('/dislike', authProtect, disLikeIdea)

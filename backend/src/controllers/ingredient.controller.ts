@@ -83,7 +83,7 @@ export const updateIngredient = async (req:any, res:any, next:any) => {
 export const deleteIngredient = async (req:any, res:any, next:any) => {
     try {
     const {ingredientId} = req.params
-    const deletedIngredient = await Ingredient.findByIdAndDelete(ingredientId);
+    const deletedIngredient = await Ingredient.findByIdAndDelete(ingredientId)
     const url = deletedIngredient?.image
     const urlParts = url?.split('/')
     const firstPart = urlParts?.find(part => part === "images");
