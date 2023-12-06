@@ -20,37 +20,14 @@ export interface IUser extends Document {
 export const userSchema = new Schema<IUser>(
   {
     token: String,
-    role: {
-      type: String,
-      enum: ['user', 'admin'],
-      default: 'user',
-    },
-    password: {
-      type: String,
-      required: true,
-      minlength: 8,
-      select: false,
-    },
+    role: { type: String, enum: ['user', 'admin'], default: 'user',},
+    password: { type: String, required: true, minlength: 8, select: false,},
     resetPasswordToken: String,
     resetPasswordDate: Date,
-    username: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    email: {
-      unique: true,
-      type: String,
-      required: false,
-      default: 'None'
-    },
+    username: { type: String, required: true, trim: true, },
+    email: { unique: true, type: String, required: false, default: 'None'},
     birthday: { type: Date, required: false },
-    avatar: {
-      type: String,
-      required: false,
-      default:
-        'https://th.bing.com/th/id/R.1048d71b039ca7283d87eec6a529b0a0?rik=0cMq4nxTScT%2bVg&riu=http%3a%2f%2fwww.sibberhuuske.nl%2fwp-content%2fuploads%2f2016%2f10%2fdefault-avatar.png&ehk=J%2bHgivvxUTYqjXIPA%2b2%2boM2IcVlwQoR7mjtdLTS2saQ%3d&risl=&pid=ImgRaw&r=0',
-    },
+    avatar: { type: String, required: false, default:'https://res.cloudinary.com/draisiudw/image/upload/v1701134250/avatars/avatar.jpg',},
     phone: String,
     posts: [{ type: Types.ObjectId, ref: 'Post', default: [] }],
     comments: [{ type: Types.ObjectId, ref: 'Comment', default: [] }],

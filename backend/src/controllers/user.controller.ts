@@ -36,23 +36,6 @@ export const findUser = async (req: any, res: any, next: any) => {
   }
 }
 
-export const updateProfileAvatar = async (req: any, res: any, next: any) => {
-  try {
-    const { avatar } = req.body
-
-    await User.findByIdAndUpdate(req.payload.user.id, {
-      avatar: await cloudinary.uploader.upload(avatar,{
-        folder:'avatars',
-        resource_type:'image',
-        allowed_formats: ['jpg', 'png', 'jpeg'],
-      }),
-    })
-    res.json(avatar.public_id)
-  } catch (err: any) {
-    next(new apiErrorResponse(`${err.message}`, 500))
-  }
-}
-
 export const changePassword = async (req: any, res: any, next: any) => {
   const { username, password } = req.body
 
@@ -70,18 +53,24 @@ export const changePassword = async (req: any, res: any, next: any) => {
 
 export const updateUser = async (req: any, res: any, next: any) => {
   try {
-    const updatedUser = await User.findByIdAndUpdate(req.params.userId, { $set: req.body }, { new: true }).select(
-      '-password'
-    )
+    if (req.file.path) {
+      req.body.avatar = req.file.path;
+    }
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.userId,
+      { $set: req.body },
+      { new: true }
+    ).select('-password');
 
     if (!updatedUser) {
-      return next(new apiErrorResponse(`Could not update`, 400))
+      return next(new apiErrorResponse(`Could not update`, 400));
     }
-    return res.status(200).json({ success: true, message: 'Updated successfully', updatedUser })
+
+    return res.status(200).json({ success: true, message: 'Updated successfully', updatedUser });
   } catch (err: any) {
-    next(new apiErrorResponse(`${err.message}`, 500))
+    next(new apiErrorResponse(`${err.message}`, 500));
   }
-}
+};
 
 export const search = async (req: any, res: any, next: any) => {
   try {

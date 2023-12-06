@@ -1,55 +1,31 @@
-import { Avatar, Card } from 'antd'
-import Meta from 'antd/es/card/Meta'
-import { Http } from 'api/http'
-import { useEffect, useState } from 'react'
-import { formatDayTime } from 'utils/helperFormat'
+import { Avatar, List, Skeleton } from "antd";
+import Link from "antd/es/typography/Link";
+import useRoleNavigate from "libs/role-navigate";
 
-function UserCard({ userId }:any) {
-  const [userProfile, setUserProfile] = useState<any>(null)
+export default function UserCard({user,loading}:any){
 
-  const findUser = async (id:any) => {
-    await Http.get(`/api/v1/users/getProfile/${id}`)
-      .then(res => setUserProfile(res.data.userInfo))
-      .catch(err => setUserProfile(null))
-  }
-  useEffect(() => {
-    if (userId) {
-      findUser(userId)
+    const navigate = useRoleNavigate()
+
+    const handleViewAccount = (id:any) => {
+        navigate(`/profile?id=${id}`)
     }
-  }, [userId])
-
-  if (!userProfile) return null
-
-  return (
-    <>
-      <Card style={{ width: '100%', marginTop: 16 }}>
-        <Meta
-          avatar={<Avatar src={userProfile?.avatar} />}
-          title={userProfile?.name}
-          description={
-            <>
-              <div>
-                <b>DOB: </b>
-                {formatDayTime(userProfile?.birthday)}
-              </div>
-              <div>
-                <b>Phone number: </b>
-                {userProfile?.phone || 'None'}
-              </div>
-              <div>
-                <b>Email: </b>
-                {userProfile?.email}
-              </div>
-              <div>
-                <b>Role: </b>
-                {userProfile?.role}
-              </div>
-            </>
-          }
-        />
-      </Card>
-    </>
-  )
+    return(
+        <Skeleton loading={loading}>
+        <List.Item>
+        <List.Item.Meta
+        avatar={
+        <Link onClick={()=>handleViewAccount(user._id)}>
+        <Avatar src={user.avatar} />
+        </Link>
+        }
+        title={
+        <Link onClick={()=>handleViewAccount(user._id)}>
+        {user.username}
+        </Link>
+        }
+        />    
+        </List.Item> 
+        </Skeleton>
+        
+    )
 }
-
-export default UserCard

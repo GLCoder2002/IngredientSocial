@@ -6,6 +6,7 @@ import { ReadConfig } from './config'
 import connectToDb from './libs/db'
 import apiRoutes from './routers/api'
 import bodyParser from 'body-parser'
+import { createSocketIO } from './utils/socket'
 
 
 async function main() {
@@ -24,6 +25,8 @@ async function main() {
   //tk: admin, mk: Admin123
 
   let server = http.createServer(app)
+
+  createSocketIO(server)
 
   server.listen(Number(config.server.port), '0.0.0.0', () => {
     const err = arguments[0]

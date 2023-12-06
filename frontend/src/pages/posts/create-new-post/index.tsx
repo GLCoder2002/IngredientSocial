@@ -15,14 +15,11 @@ export default function CreatePost() {
   const [form] = Form.useForm()
   const navigate = useRoleNavigate()
   const [selectedIngredients, setSelectedIngredients] = useState<any>([])
-  // const initialState = () => EditorState.createEmpty()
   const [editorState, setEditorState] = useState('')
   const [openModal, setOpenModal] = useState(false)
   const [video, setVideo] = useState<any>([])
-  const [loading,setLoading] = useState(false)
 
   const onSubmitPost = async () => {
-    setLoading(true)
     const content = editorState
     if (content.length <= 20) {
       return message.error('Your description is too spacing')
@@ -50,7 +47,6 @@ export default function CreatePost() {
         navigate('/')
       })
       .catch(error => message.error(error.message + '. Please try again'))
-      .finally(()=>setLoading(false))
   }
 
   const windowWidth = useWindowSize()
@@ -152,7 +148,7 @@ export default function CreatePost() {
         </Form.Item>
         <TermCondition isOpen={openModal} onCloseModal={() => setOpenModal(false)} />
         <Form.Item wrapperCol={{ span: 15 }}>
-          <Button loading={loading} type="primary" htmlType="submit" onClick={() => onSubmitPost()} style={{ marginTop: 10 }}>
+          <Button type="primary" htmlType="submit" onClick={() => onSubmitPost()} style={{ marginTop: 10 }}>
             Post
           </Button>
         </Form.Item>

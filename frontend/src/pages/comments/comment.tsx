@@ -38,9 +38,7 @@ function Comment({ item, loading }:{item:any,loading:any}) {
   const { _id } = useSubscription(userStore).state
 
   const handleViewProfile = (id:any) => {
-    if (id !== 'Anonymous' && id !== 'Unknown') {
       navigate(`/profile?id=${id}`)
-    }
   }
 
   let action = [
@@ -66,14 +64,14 @@ function Comment({ item, loading }:{item:any,loading:any}) {
               avatar={
                 <Avatar
                   size={45}
-                  src={!item.isAnonymous ? item.userId?.avatar : window.location.origin + '/images/anonymous.jpg'}
+                  src={item.userId?.avatar ? item.userId?.avatar : window.location.origin + '/images/anonymous.jpg'}
                   style={{ background: '#ccc' }}
                 />
               }
               title={
                 <>
-                  <Typography.Link onClick={() => !item.isAnonymous && handleViewProfile(item.userId?._id)}>
-                    {!item.isAnonymous ? item.userId?.name : 'Anonymous'}
+                  <Typography.Link onClick={() => handleViewProfile(item.userId?._id)}>
+                    {item.userId?.username ? item.userId?.username : 'Unknown'}
                   </Typography.Link>
                   {'  '}
                   <Typography.Text italic disabled type="secondary" style={{ fontSize: 13 }}>
@@ -93,9 +91,6 @@ function Comment({ item, loading }:{item:any,loading:any}) {
                   </Typography.Paragraph>
                 </>
               }
-              // description={
-
-              // }
             />
             <article
               style={{

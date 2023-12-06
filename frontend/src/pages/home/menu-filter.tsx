@@ -4,14 +4,13 @@ import {
   FireFilled,
   FrownFilled,
   RocketFilled,
-  SlidersFilled,
 } from '@ant-design/icons'
 import { Button, Col, Dropdown, MenuProps, Radio, Space, Typography } from 'antd'
 import useWindowSize from '../../utils/useWindowSize'
 
 const { Text } = Typography
 
-function MenuFilter({ setFilter, filter, totalPost }:{setFilter:any,filter:any,totalPost:any}) {
+function MenuFilter({ setFilter, filter, totalPost }:any) {
   const windowWidth = useWindowSize()
   const display = windowWidth < 1000 ? 'block' : 'flex'
   const onClickFilter = (val: any) => {
@@ -31,17 +30,6 @@ function MenuFilter({ setFilter, filter, totalPost }:{setFilter:any,filter:any,t
       label: (
         <Text style={{ fontSize: 15, margin: 0 }} onClick={() => onClickFilter('month')}>
           Month
-        </Text>
-      ),
-    },
-  ]
-
-  const moreItems: MenuProps['items'] = [
-    {
-      key: 'your-posts',
-      label: (
-        <Text style={{ fontSize: 15, margin: 0 }} onClick={() => onClickFilter('your-posts')}>
-          Your Post
         </Text>
       ),
     },
@@ -75,11 +63,6 @@ function MenuFilter({ setFilter, filter, totalPost }:{setFilter:any,filter:any,t
             <Dropdown menu={{ items: topItems }} placement="bottom" arrow trigger={['click']}>
               <Button>
                 <CrownFilled /> Top
-              </Button>
-            </Dropdown>
-            <Dropdown menu={{ items: moreItems }} placement="bottom" arrow trigger={['click']}>
-              <Button>
-                <SlidersFilled />
               </Button>
             </Dropdown>
           </Space>

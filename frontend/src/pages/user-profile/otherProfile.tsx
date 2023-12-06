@@ -13,12 +13,12 @@ const tabList = [
   },
 ]
 
-function OtherProfile({userId}:any) {
-  // const query = useQuery()
-  // const userId = query.get('id')
+function OtherProfile() {
+  const query = useQuery()
+  const posterId = query.get('id')
 
-  // const [, forceUpdate] = useState({})
-  // useEffect(() => forceUpdate({}), [userId])
+  const [, forceUpdate] = useState({})
+  useEffect(() => forceUpdate({}), [posterId])
 
   const [userProfile, setUserProfile] = useState<any>(null)
   const [loading, setLoading] = useState(false)
@@ -32,11 +32,11 @@ function OtherProfile({userId}:any) {
       .finally(() => setLoading(false))
   }
   useEffect(() => {
-    if (userId) {
-      findUser(userId)
+    if (posterId) {
+      findUser(posterId)
     }
-  }, [userId])
-
+  }, [posterId])
+  
   return (
     <Row gutter={{ xs: 8, sm: 16, md: 24 }} style={{ padding: 20 }}>
       <Col className="gutter-row" xs={24} sm={24} md={6} xxl={6} style={{ marginBottom: 16 }}>
@@ -53,7 +53,7 @@ function OtherProfile({userId}:any) {
           <Space direction="vertical" size={16} className="w-100">
             <div className="center w-100">
               <Tag color="#f50" style={{ fontSize: 20, padding: 8 }}>
-                {userProfile?.name}
+                {userProfile?.username}
               </Tag>
             </div>
             <Divider style={{ margin: 0 }} />
@@ -77,8 +77,8 @@ function OtherProfile({userId}:any) {
         </Card>
       </Col>
       <Col className="gutter-row" xs={24} sm={24} md={18} xxl={18}>
-        <Card tabList={tabList} activeTabKey={activeTabKey} onTabChange={setActiveTabKey}>
-          <ListPosts userId={userId} />
+        <Card loading={loading} tabList={tabList} activeTabKey={activeTabKey} onTabChange={setActiveTabKey}>
+          <ListPosts posterId={posterId} />
         </Card>
       </Col>
     </Row>

@@ -1,3 +1,4 @@
+import { FileDoneOutlined, TeamOutlined } from '@ant-design/icons'
 import {Card, Col, message, Row} from 'antd'
 import Title from 'antd/es/typography/Title'
 import {Http} from 'api/http'
@@ -9,10 +10,14 @@ const SmallStatistic: React.FC = () => {
   const [totalPost, setTotalPost] = useState(0)
 
   const getTotalAccount = async () => {
-    await Http.get('/api/v1/users/totalUsers').then(res => setTotalAccount(res.data?.total)).catch(err => message.error('Failed to get total users!'))
+    await Http.get('/api/v1/users/totalUsers')
+    .then(res => setTotalAccount(res.data?.total))
+    .catch(err => message.error('Failed to get total users!'))
   }
   const getTotalPost = async () => {
-    await Http.get('/api/v1/posts/totalPosts').then(res => setTotalPost(res.data?.total)).catch(err => message.error('Failed to get total posts!'))
+    await Http.get('/api/v1/posts/totalPosts')
+    .then(res => setTotalPost(res.data?.total))
+    .catch(err => message.error('Failed to get total posts!'))
   }
 
   useEffect(() => {
@@ -28,7 +33,7 @@ const SmallStatistic: React.FC = () => {
         Total Accounts
       </Title>
       <Title level={4} type="success">
-        {totalAccount?.toString()} accounts
+        {totalAccount?.toString()} <TeamOutlined />
       </Title>
     </Card>
   </Col>
@@ -38,7 +43,7 @@ const SmallStatistic: React.FC = () => {
         Total Posts
       </Title>
       <Title level={4} type="success">
-        {totalPost?.toString()} posts
+        {totalPost?.toString()} <FileDoneOutlined />
       </Title>
     </Card>
   </Col>

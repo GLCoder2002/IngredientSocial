@@ -35,7 +35,6 @@ const UserLayout = ({ children }: { children: any }) => {
       getItem('Home', 'home', <HomeFilled />),
       getItem('Advance Search', 'advance', <WeiboOutlined />),
       getItem('Posts', 'posts', <RedditOutlined />),
-      getItem('Social','profile',<UsergroupDeleteOutlined />)
     ], 'group'),
   ];
 

@@ -39,7 +39,6 @@ categoryRouter.post('/', authProtect, authorize(['admin']), express.json(), asyn
       })
     }
     res.status(200).json({ success: 1 })
-    //updateIdeaNumberRealTime()
   } catch (err:any) {
     res.status(500).json({
       message: err.message,
@@ -51,7 +50,6 @@ categoryRouter.delete('/:id', authProtect, authorize(['admin']), express.json(),
   try {
     const eventId = req.params.id
     await Category.findByIdAndDelete(eventId)
-    //updateIdeaNumberRealTime()
 
     res.status(200).json({ success: 1 })
   } catch (err:any) {

@@ -1,6 +1,5 @@
 import { ArrowLeftOutlined, QuestionCircleOutlined } from '@ant-design/icons'
-import { Button, Card, Checkbox, Form, Input, Space, Spin, Switch, Typography, message } from 'antd'
-import FormItem from 'antd/es/form/FormItem'
+import { Button, Card, Checkbox, Form, Input, Space, Spin, Typography, message } from 'antd'
 import { ContentState, EditorState, convertFromHTML, convertToRaw } from 'draft-js'
 import draftToHtml from 'draftjs-to-html'
 import { Http } from '../../api/http'
@@ -22,11 +21,8 @@ export default function Editpost() {
   const [openModal, setOpenModal] = useState(false)
   const [files, setFiles] = useState<any>([])
   const [categories, setCategories] = useState<any>([])
-  const [isAnonymous, setAnonymous] = useState(false)
   const [isShown, setIsShown] = useState(false)
-  const setFileState = async (value: never[]) => {
-    setFiles(value)
-  }
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsShown(true)
@@ -50,26 +46,6 @@ export default function Editpost() {
     getPost()
   }, [])
 
-  const [allHastag, setAllHastag] = useState<any>([])
-
-  const getHastagList = async () => {
-    await Http.get('/api/v1/hastag')
-      .then(res => {
-        setAllHastag(res.data.data)
-      })
-      .catch(error => message.error(error.message))
-  }
-
-  useEffect(() => {
-    getHastagList()
-  }, [])
-
-  const normFile = (e: any) => {
-    const fileList = e
-    setFileState(fileList)
-    return e
-  }
-
   const onSubmitPost = async () => {
     const content = draftToHtml(convertToRaw(editorState.getCurrentContent()))
     if(content.length <= 20) {
@@ -79,7 +55,6 @@ export default function Editpost() {
       title: form.getFieldValue('title'),
       content: `${content}`,
       categories: categories,
-      isAnonymous: isAnonymous,
     }
     if(categories.length === 0) {
       return message.error('At least one tags')
@@ -123,10 +98,6 @@ export default function Editpost() {
         layout="horizontal"
         labelAlign="left"
       >
-        <Form.Item name="event" label="Chosen Special Event" initialValue={data[0]?.specialEvent?.title}>
-          <Input style={{ lineHeight: 2.15 }} disabled></Input>
-        </Form.Item>
-
         <Form.Item name="title" label="Title" initialValue={data[0]?.title}
         rules={[{ required: true, message: "Please input your post's title" }, { type: 'string', min: 30, message: "Your title is too sparsing, at least 30 characters" }]} 
         >
@@ -146,15 +117,6 @@ export default function Editpost() {
             <FileDisplay files={data[0]?.files} isFit={true}></FileDisplay>
           </Form.Item>
         )} */}
-
-        <Form.Item label="Anonymous Mode">
-          <Switch
-            defaultChecked={data[0]?.isAnonymous ? true : false}
-            onChange={() => setAnonymous(!isAnonymous)}
-            checkedChildren="On"
-            unCheckedChildren="Off"
-          />
-        </Form.Item>
 
         <Form.Item
           name="agreement"

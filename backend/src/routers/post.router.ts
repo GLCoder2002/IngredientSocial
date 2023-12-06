@@ -1,26 +1,20 @@
-import { createPost, getAllPosts, getTotalPost, postByTime } from '../controllers/post.controller'
+import { createPost, deletePost, disLikePost, editPost, getAllPosts, getAllPostsOfUser, getDataSuggestion, getPost, getPostLikes, getTotalPost, likePost, postByTime } from '../controllers/post.controller'
 import express from 'express'
 import { authProtect, authorize } from '../middlewares/auth'
 import { uploadMulter } from '../utils/cloudconfig'
-//import { getPresignedUrl } from '../controllers/upload.controller'
-
 
 export const postRouter = express.Router()
 
+postRouter.get('/suggest', authProtect, getDataSuggestion)
 postRouter.get('/', authProtect, getAllPosts)
-//postRouter.get('/suggest', authProtect, getDataSuggestion)
-//postRouter.get('/ideasOfUser', authProtect, getAllIdeasOfUser)
-// postRouter.get('/ideasByCategory', authProtect, getAllIdeasByCategory)
-// postRouter.get('/ideasByDepartment', authProtect, getAllIdeasByDepartment)
-//postRouter.get('/detail', authProtect, getPostDetail)
-//postRouter.get('/ideaLikes', authProtect, getPostLikes)
 postRouter.get('/allPosts', authProtect, getAllPosts)
-//postRouter.get('/ideaTotalByDuration', authProtect, ideaTotalByDuration)
 postRouter.post('/create',uploadMulter.single('video'), authProtect, authorize(['user']), createPost)
-postRouter.post('/totalPosts', authProtect, getTotalPost)
+postRouter.get('/totalPosts', authProtect, getTotalPost)
 postRouter.get('/totalPostByTime', postByTime, authProtect, authorize(['admin']))
-//postRouter.put('/dislike', authProtect, disLikeIdea)
-//postRouter.put('/like', authProtect, likeIdea)
-//postRouter.put('/omitVote', authProtect, omitVoteIdea)
-// postRouter.put('/edit/:ideaId', authProtect, editIdea)
-// postRouter.delete('/delete/:ideaId', authProtect, deleteIdea)
+postRouter.put('/edit/:postId',uploadMulter.single('video'), authProtect, editPost)
+postRouter.get('/detail', authProtect, getPost)
+postRouter.put('/dislike', authProtect, disLikePost)
+postRouter.put('/like', authProtect, likePost)
+postRouter.delete('/delete/:postId', authProtect, deletePost)
+postRouter.get('/postsOfUser/:posterId', authProtect, getAllPostsOfUser)
+postRouter.get('/postReaction', authProtect, getPostLikes)

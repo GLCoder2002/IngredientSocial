@@ -1,5 +1,5 @@
 import {
-  Alert,
+  Card,
   Layout,
   Space,
   Spin,
@@ -17,12 +17,16 @@ import {userStore} from 'pages/auth/userStore'
 import {Http} from 'api/http'
 import CreateComment from 'pages/comments/create-comment'
 import PostDetailInfo from './post-detail-info'
+import styled from 'styled-components';
+import { useSocket } from 'socket.io'
+import ReactPlayer from 'react-player'
 
 const {Text, Link} = Typography
 
-function PostDetail() { // const { appSocket } = useSocket()
-  const [data, setData] = useState < any[] > ([])
+function PostDetail() { 
+  const [data, setData] = useState <any>([])
   const [showComment, setShowComment] = useState(false)
+  const {appSocket} = useSocket()
   const [updatePost, setUpdatePost] = useState(0)
   const [commentCount, setCommentCount] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -30,6 +34,7 @@ function PostDetail() { // const { appSocket } = useSocket()
   const id = query.get('id')
   const {username, avatar} = useSubscription(userStore).state
   const windowWidth = useWindowSize()
+  const { role } = useSubscription(userStore).state
   const padding = windowWidth < 969 ? '10px 0' : '15px 60px 50px'
 
   const handleShowComment = () => {
@@ -39,10 +44,12 @@ function PostDetail() { // const { appSocket } = useSocket()
   useEffect(() => {
     setLoading(true)
     const getPost = async () => 
-    await Http.get(`/api/v1/post/detail?id=${id}`).then(res => {
+    await Http.get(`/api/v1/posts/detail?id=${id}`).then(res => {
       setData([res.data.data])
       setCommentCount(res.data.data.comments.length)
-    }).catch(error => message.error('Failed to fetch post !')).finally(() => setLoading(false))
+    })
+    .catch(error => message.error('Failed to fetch post !'))
+    .finally(() => setLoading(false))
     getPost()
   }, [])
 
@@ -54,56 +61,67 @@ function PostDetail() { // const { appSocket } = useSocket()
     }
   }
 
-  // useEffect(() => {
-  // appSocket.on('comments', data => {
-  //     if (data.postId === id) {
-  //       updateCommentLength(data)
-  //     }
-  // })
-  // return () => {
-  //     appSocket.off('comments')
-  // }
-  // }, [updateCommentLength])
+  useEffect(() => {
+    appSocket?.on('comments', (data:any) => {
+      if (data.ideaId === id) {
+        updateCommentLength(data)
+      }
+    })
+    return () => {
+      appSocket?.off('comments')
+    }
+  }, [updateCommentLength])
 
   return (
-    <> {
-      !loading ? (
+    <> 
+    {!loading ? (
         <Layout className="layout"
           style={
             {padding: padding}
         }>
-          <Content>
+          <Card>
+            <Content>
             <Space direction="horizontal" align="start">
-              <Space style={
-                  {padding: '16px 28px 0'}
-                }
+              <Space style={{padding: '16px 28px 0'}}
                 direction="vertical">
-                <PostDetailInfo item={
-                  data[0]
-                }></PostDetailInfo>
-                <ReadMore>{
-                  data[0]?.content
-                }</ReadMore>
-
-                <Space> {
-                  data[0]?.hashtags.length !== 0 ? data[0]?.hashtags?.map((tag
-                  : any) => (
-                    <div style={
-                      {
-                        backgroundColor: '#f4f4f5',
-                        color: '#9ba1af',
-                        padding: '5px',
-                        borderRadius: '5px',
-                        border: '2px'
-                      }
-                    }>
-                      @{
-                      tag.name
-                    } </div>
-                  )) : null
-                } </Space>
-
-                <br></br>
+                <PostDetailInfo item={data[0]}></PostDetailInfo>
+                <Space>
+                  The recipe include: 
+                  {data[0]?.ingredients.length !== 0
+                    ? data[0]?.ingredients?.map((ingredient:any) => (
+                        <div
+                          style={{
+                            backgroundColor: '#f4f4f5',
+                            color: '#9ba1af',
+                            padding: '5px',
+                            borderRadius: '5px',
+                            border: '2px',
+                          }}
+                        >
+                          {ingredient.name} 
+                        </div>
+                      ))
+                    : null}
+                </Space>
+                <ReadMore>{data[0]?.content}</ReadMore>
+                {role === 'admin' ? (
+                  <ReactPlayer
+                  style={{paddingTop:'5px'}}
+                  url = {data[0]?.video}
+                  light = {true}
+                  controls = {true}
+                  width='900px'
+                  height='300px'
+                  />)
+                  : 
+                  ( <ReactPlayer
+                    url = {data[0]?.video}
+                    light = {true}
+                    controls = {true}
+                    width='650px'
+                    height='300px'
+                    />)
+                }
               </Space>
             </Space>
             <MenuBar commentCount={commentCount}
@@ -122,9 +140,10 @@ function PostDetail() { // const { appSocket } = useSocket()
                 }
                 direction="vertical">
                 <Text>
-                  Comment as
+                  Comment as <Space/> 
                   <Text strong>
-                    {username}</Text>
+                    {username}
+                  </Text>
                 </Text>
                 <CreateComment user={
                     {avatar, username}
@@ -133,18 +152,20 @@ function PostDetail() { // const { appSocket } = useSocket()
                   email={
                     data[0]?.posterId?.email
                   }/>
-              </Space>
+              </Space> 
             </Content>
+          </Card>
+           
           {
           showComment ? (
-            <Content>
+            <ContentStyle>
               <div style={
                 {width: '100%'}
               }>
                 <CommentsList id={id}
                   updatePost={updatePost}/>
               </div>
-            </Content>
+            </ContentStyle>
           ) : null
         } </Layout>
       ) : (
@@ -164,9 +185,8 @@ function PostDetail() { // const { appSocket } = useSocket()
               ...{' '} </div>
           </Spin>
         </>
-      )
-    }
-      {' '} </>
+      )}
+    {' '} </>
   )
 }
 
@@ -177,7 +197,7 @@ function ReadMore({children} : {
 }) {
   const text: string = children
   const [isReadMore, setIsReadMore] = useState(true)
-  const textDisplay: string = isReadMore ? text ?. slice(0, 1500) : text
+  const textDisplay: string = isReadMore ? text?.slice(0, 1500) : text
   const toggleReadMore = () => {
     setIsReadMore(!isReadMore)
   }
@@ -204,11 +224,11 @@ export function RenderHtml(prop : any) {
   }></div>
 }
 
-// const Content = styled(Content)`
-//   background: white;
-//   border: 1px solid #ccc;
-//   border-radius: 8px;
-//   height: 100%;
-//   padding-bottom: 16px;
-//   margin-bottom: 16px;
-// `
+const ContentStyle = styled(Content)`
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  height: 100%;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+`

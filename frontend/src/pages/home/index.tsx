@@ -4,19 +4,20 @@ import { Http } from "api/http"
 import { useSubscription } from "libs/global-state-hooks"
 import useRoleNavigate from "libs/role-navigate"
 import { userStore } from "pages/auth/userStore"
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { handleFilter } from "utils/handleFilter"
 import useWindowSize from "utils/useWindowSize"
 import MenuFilter from "./menu-filter"
 import PostsList from "pages/posts/posts-list"
 
-function HomePage({accessRole}:{accessRole?:string}){
+function HomePage(){
   const navigate = useRoleNavigate()
   const windowWidth = useWindowSize()
   const [posts, setPosts] = useState<any[]>([])
   const [isEnd, setEnd] = useState(false)
   const [filter, setFilter] = useState('new')
   const [optionsQuery, setOptionsQuery] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
   const [loading, setLoading] = useState(false)
   const [totalPost, setTotalPost] = useState(0)
   const fitPadding = windowWidth < 1000 ? '10px 0' : '10px 100px'
@@ -29,11 +30,11 @@ function HomePage({accessRole}:{accessRole?:string}){
     setEnd(false)
     const query = handleFilter(filter)
     setOptionsQuery(query!)
-    loadMoreData(true, query)
+    loadMoreData(true, query, 1)
   }, [filter])
 
   const getTotalPost = async () => {
-    await Http.get('/api/v1/posts', { accessRole: accessRole || null })
+    await Http.get('/api/v1/posts/totalPosts')
       .then(res => setTotalPost(res.data?.total))
       .catch(err => message.error('Failed to get total posts!'))
   }
@@ -42,20 +43,31 @@ function HomePage({accessRole}:{accessRole?:string}){
     getTotalPost()
   }, [])
 
-  const loadMoreData = (reset: boolean = false, filter?:any) => {
+  const loadMoreData = (reset: boolean = false, filter?:any, page?:any) => {
     setLoading(true)
     const tabQuery = filter ? filter : optionsQuery
+    const curPage = page ? page : currentPage
+    console.log(curPage)
     const getAllPosts = async () =>
-      await Http.get(`/api/v1/posts/?filter=${tabQuery}`)
+      await Http.get(`/api/v1/posts?page=${curPage}&${tabQuery}`)
         .then(res => {
           if (reset === true) {
             setPosts(res.data.data)
-          } else {
-            setEnd(true)
+            if (res.data?.next?.page) {
+              setCurrentPage(res.data.next.page)
+            }
+            return
+          } 
+          if (res.data?.next?.page) {
+            setCurrentPage(res.data.next.page)
           }
-          setPosts([...posts, ...res.data.data])
+          else {
+            setEnd(true)
+            setCurrentPage(1)
+          }
+          setPosts(prev => [...posts, ...res.data.data])
         })
-        .catch(message.error('Failed to get all posts !'))
+        .catch(err => message.error('Failed to get all posts!'))
         .finally(() => setLoading(false))
     getAllPosts()
   }
@@ -89,7 +101,9 @@ function HomePage({accessRole}:{accessRole?:string}){
       <Row style={rowStyle}>
         <MenuFilter setFilter={setFilter} filter={filter} totalPost={totalPost} />
       </Row>
+      <Suspense fallback = 'loading...'>
       <PostsList posts={posts} loading={loading} loadMoreData={loadMoreData} isEnd={isEnd} />
+      </Suspense>
     </Layout.Content>
   )
 }

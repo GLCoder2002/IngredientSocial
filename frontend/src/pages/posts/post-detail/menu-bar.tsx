@@ -2,22 +2,19 @@ import {
   CaretDownFilled,
   CaretUpFilled,
   CommentOutlined,
-  DownloadOutlined,
   FireTwoTone,
   ShareAltOutlined,
 } from '@ant-design/icons'
-import { Button, message, Radio, Space, Typography } from 'antd'
-
+import { Button, message, Space } from 'antd'
 import { useEffect, useState } from 'react'
-import useWindowSize from '../../../utils/useWindowSize'
-import { disLikeHandler, handleDownloadFiles, likeHandler, omitHandler } from './post-detail-service'
+import { disLikeHandler,likeHandler } from './post-detail-service'
 import PointInfoModal from './points-info-modal'
 import { useSubscription } from 'libs/global-state-hooks'
 import { userStore } from 'pages/auth/userStore'
+import styled from 'styled-components'
 import { Http } from 'api/http'
-//import { useSocket } from 'next/socket.io'
+import { useSocket } from 'socket.io'
 
-let reactionTimeOut:any = null
 interface MenuBarProps{
   commentCount:any, 
   handleShowComment:any, 
@@ -25,8 +22,7 @@ interface MenuBarProps{
   name:any, 
 }
 export default function MenuBar({ commentCount, handleShowComment, postId, name }:MenuBarProps) {
-  //const { appSocket } = useSocket()
-  const windowWidth = useWindowSize()
+  const {appSocket} = useSocket()
   const [likers, setLikers] = useState<any[]>([])
   const [dislikers, setDisLikers] = useState<any[]>([])
   const { state } = useSubscription(userStore)
@@ -38,76 +34,74 @@ export default function MenuBar({ commentCount, handleShowComment, postId, name 
   const [openModal, setOpenModal] = useState(false)
 
   const fetchLikes = async (id: any) => {
-    await Http.get(`/api/v1/post/postLikes?postId=${id}`)
+    await Http.get(`/api/v1/posts/postReaction?postId=${id}`)
       .then(res => {
-        setIsLiked(res.data.likes.findIndex((like: any) => like._id === state._id) >= 0)
-        setIsDisLiked(res.data.dislikes.findIndex((like: any) => like._id === state._id) >= 0)
-        setLikes(res.data.likes.length)
-        setDisLikes(res.data.dislikes.length)
-        setVotes(res.data.likes.length - res.data.dislikes.length)
-        setLikers(res.data.likes)
-        setDisLikers(res.data.dislikes)
+        setIsLiked(res.data.likes?.findIndex((like: any) => like._id === state._id) >= 0)
+        setIsDisLiked(res.data.dislikes?.findIndex((like: any) => like._id === state._id) >= 0)
+        setLikes(res.data.likes?.length)
+        setDisLikes(res.data.dislikes?.length)
+        setVotes(res.data.likes?.length - res.data.dislikes?.length)
+        setLikers(res.data?.likes)
+        setDisLikers(res.data?.dislikes)
       })
       .catch(error => {
         return message.error(error.message)
       })
   }
 
-  const updateVoteRealTime = (info:any) => {
-    if (info.user._id === state._id) return
+  const updateReaction = (info: any) => {
+    if (info.user._id === state._id) return;
+  
     if (info.action === 'like') {
-      if (dislikers.map(liker => liker._id).indexOf(info.user._id) >= 0) {
-        setDisLikers(dislikers => {
-          dislikers = dislikers.filter(l => l._id !== info.user._id)
-          return dislikers
-        })
-        setDisLikes(prev => prev - 1)
-        setVotes(votesCount => votesCount + 1)
+      const dislikerIndex = dislikers?.findIndex(liker => liker._id === info.user._id);
+      if (dislikerIndex >= 0) {
+        setDisLikers(dislikers => dislikers?.filter(l => l._id !== info.user._id));
+        setDisLikes(prev => prev - 1);
+        setVotes(votesCount => votesCount + 1);
       }
-      setLikers(prev => [...prev, info.user])
-      setVotes(votesCount => votesCount + 1)
-      return setLikes(prev => prev + 1)
+  
+      setLikers(prev => [...prev, info.user]);
+      setVotes(votesCount => votesCount + 1);
+      setLikes(prev => prev + 1);
     } else if (info.action === 'dislike') {
-      if (likers.map(liker => liker._id).indexOf(info.user._id) >= 0) {
-        setLikers(likers => {
-          likers = likers.filter(l => l._id !== info.user._id)
-          return likers
-        })
-        setLikes(prev => prev - 1)
-        setVotes(votesCount => votesCount - 1)
+      const likerIndex = likers?.findIndex(liker => liker._id === info.user._id);
+      if (likerIndex >= 0) {
+        setLikers(likers => likers?.filter(l => l._id !== info.user._id));
+        setLikes(prev => prev - 1);
+        setVotes(votesCount => votesCount - 1);
       }
-      setDisLikers(prev => [...prev, info.user])
-      setVotes(votesCount => votesCount - 1)
-      return setDisLikes(prev => prev + 1)
+  
+      setDisLikers(prev => [...prev, info.user]);
+      setVotes(votesCount => votesCount - 1);
+      setDisLikes(prev => prev + 1);
     } else if (info.action === 'omit') {
-      if (dislikers.map(liker => liker._id).indexOf(info.user._id) >= 0) {
-        setDisLikers(dislikers => {
-          dislikers = dislikers.filter(l => l._id !== info.user._id)
-          return dislikers
-        })
-        setDisLikes(prev => prev - 1)
-        setVotes(votesCount => votesCount + 1)
-      } else if (likers.map(liker => liker._id).indexOf(info.user._id) >= 0) {
-        setLikers(likers => {
-          likers = likers.filter(l => l._id !== info.user._id)
-          return likers
-        })
-        setLikes(prev => prev - 1)
-        setVotes(votesCount => votesCount - 1)
+      const dislikerIndex = dislikers?.findIndex(liker => liker._id === info.user._id);
+      const likerIndex = likers?.findIndex(liker => liker._id === info.user._id);
+  
+      if (dislikerIndex >= 0) {
+        setDisLikers(dislikers => dislikers?.filter(l => l._id !== info.user._id));
+        setDisLikes(prev => prev - 1);
+        setVotes(votesCount => votesCount + 1);
+      } else if (likerIndex >= 0) {
+        setLikers(likers => likers?.filter(l => l._id !== info.user._id));
+        setLikes(prev => prev - 1);
+        setVotes(votesCount => votesCount - 1);
       }
     }
-  }
+  };
 
-  // useEffect(() => {
-  //   appSocket.on('votes', data => {
-  //     if (data.postId === postId) {
-  //       updateVoteRealTime(data)
-  //     }
-  //   })
-  //   return () => {
-  //     appSocket.off('votes')
-  //   }
-  // }, [updateVoteRealTime])
+  
+
+  useEffect(() => {
+    appSocket?.on('votes', (data:any) => {
+      if (data.postId === postId) {
+        updateReaction(data)
+      }
+    })
+    return () => {
+      appSocket?.off('votes')
+    }
+  }, [updateReaction])
 
   useEffect(() => {
     return () => {
@@ -129,11 +123,9 @@ export default function MenuBar({ commentCount, handleShowComment, postId, name 
       setLikes(likesCount => likesCount - 1)
       setIsLiked(isLiked => !isLiked)
       setLikers(likers => {
-        likers = likers.filter(l => l._id !== state._id)
+        likers = likers?.filter(l => l._id !== state._id)
         return likers
       })
-      reactionTimeOut && clearTimeout(reactionTimeOut)
-      reactionTimeOut = setTimeout(() => omitHandler(postId), 200)
     } else {
       setVotes(votesCount => votesCount + 1)
       if (isDisLiked) {
@@ -145,11 +137,9 @@ export default function MenuBar({ commentCount, handleShowComment, postId, name 
       setLikes(likesCount => likesCount + 1)
       setLikers(likers => [...likers, { _id: state._id, name: state.username, avatar: state.avatar }])
       setDisLikers(dislikers => {
-        dislikers = dislikers.filter(l => l._id !== state._id)
+        dislikers = dislikers?.filter(l => l._id !== state._id)
         return dislikers
       })
-      reactionTimeOut && clearTimeout(reactionTimeOut)
-      reactionTimeOut = setTimeout(() => likeHandler(postId), 500)
     }
   }
 
@@ -159,11 +149,9 @@ export default function MenuBar({ commentCount, handleShowComment, postId, name 
       setDisLikes(dislikesCount => dislikesCount - 1)
       setIsDisLiked(isDisLiked => !isDisLiked)
       setDisLikers(dislikers => {
-        dislikers = dislikers.filter(l => l._id !== state._id)
+        dislikers = dislikers?.filter(l => l._id !== state._id)
         return dislikers
       })
-      reactionTimeOut && clearTimeout(reactionTimeOut)
-      reactionTimeOut = setTimeout(() => omitHandler(postId), 200)
     } else {
       setVotes(votesCount => votesCount - 1)
       if (isLiked) {
@@ -174,18 +162,15 @@ export default function MenuBar({ commentCount, handleShowComment, postId, name 
       setDisLikes(dislikesCount => dislikesCount + 1)
       setIsDisLiked(isDisLiked => !isDisLiked)
       setLikers(likers => {
-        likers = likers.filter(l => l._id !== state._id)
+        likers = likers?.filter(l => l._id !== state._id)
         return likers
       })
       setDisLikers(dislikers => [...dislikers, { _id: state._id, name: state.username, avatar: state.avatar }])
-      reactionTimeOut && clearTimeout(reactionTimeOut)
-      reactionTimeOut = setTimeout(() => disLikeHandler(postId), 500)
     }
   }
 
   return (
     <>
-      {windowWidth > 969 ? (
         <>
           <Space
             style={{
@@ -215,9 +200,9 @@ export default function MenuBar({ commentCount, handleShowComment, postId, name 
               marginBottom: 0,
             }}
           >
-            <Space>
+            <SpaceDiv>
               {isLiked ? (
-                <Button
+                <ButtonLike
                   shape="round"
                   icon={<CaretUpFilled />}
                   onClick={() => handleLikePost()}
@@ -225,14 +210,14 @@ export default function MenuBar({ commentCount, handleShowComment, postId, name 
                   style={{ background: '#464F54', color: '#F2FDF7' }}
                 >
                   {likesCount}
-                </Button>
+                </ButtonLike>
               ) : (
-                <Button shape="round" icon={<CaretUpFilled />} onClick={() => handleLikePost()} type="text">
+                <ButtonLike shape="round" icon={<CaretUpFilled />} onClick={() => handleLikePost()} type="text">
                   {likesCount}
-                </Button>
+                </ButtonLike>
               )}
               {isDisLiked ? (
-                <Button
+                <ButtonDislike
                   shape="round"
                   icon={<CaretDownFilled />}
                   onClick={() => handleDislikePost()}
@@ -240,31 +225,24 @@ export default function MenuBar({ commentCount, handleShowComment, postId, name 
                   style={{ backgroundColor: '#464F54', color: '#FFADA1' }}
                 >
                   {dislikesCount}
-                </Button>
+                </ButtonDislike>
               ) : (
-                <Button
+                <ButtonDislike
                   shape="round"
                   icon={<CaretDownFilled />}
                   onClick={() => handleDislikePost()}
                   type="text"
                 >
                   {dislikesCount}
-                </Button>
+                </ButtonDislike>
               )}
-            </Space>
+            </SpaceDiv>
             <Button icon={<CommentOutlined />} onClick={() => handleShowComment()} style={{ cursor: 'pointer' }}>
               {commentCount} Comments
             </Button>
             <Button icon={<ShareAltOutlined />}>Share</Button>
           </Space>
         </>
-      ) : (
-        <MobileMenuBar
-            vote={votesCount}
-            commentCount={commentCount}
-            handleShowComment={handleShowComment}
-            postId={postId} files={undefined}        />
-      )}
       <PointInfoModal
         isOpen={openModal}
         onCloseModal={() => setOpenModal(false)}
@@ -274,61 +252,23 @@ export default function MenuBar({ commentCount, handleShowComment, postId, name 
     </>
   )
 }
+const SpaceDiv = styled(Space)`
+  margin: auto;
+  display: flex;
+  text-align: center;
+  justify-content: center;
+  background-color: #e5e0e2;
+  width: auto;
+  border-radius: 100px;
+  gap: 0 !important;
+`
 
-function str2bytes(str:any) {
-  var bytes = new Uint8Array(str.length)
-  for (var i = 0; i < str.length; i++) {
-    bytes[i] = str.charCodeAt(i)
-  }
-  return bytes
-}
-interface MobileMenuBarProps{
-  vote:any,
-  commentCount:number, 
-  handleShowComment:any, 
-  postId:any, 
-  files:any
-}
-function MobileMenuBar({ vote, commentCount, handleShowComment, postId, files }:MobileMenuBarProps){
-  return (
-    <Space style={{ justifyContent: 'space-evenly', display: 'flex' }}>
-      <Radio.Group>
-        <Radio.Button value="like">
-          <CaretUpFilled />
-          <Typography.Text strong style={{ marginLeft: '0', width: '100%', fontSize: '13.5px', color: '#948C75' }}>
-            {vote >= 0 ? <>+{vote}</> : <>{vote}</>}
-          </Typography.Text>
-        </Radio.Button>
-        <Radio.Button value="dislike">
-          <CaretDownFilled />
-        </Radio.Button>
-      </Radio.Group>
-      <Button icon={<CommentOutlined />} onTouchEnd={() => handleShowComment()} style={{ cursor: 'pointer' }}>
-        {commentCount}
-      </Button>
-      <Button icon={<DownloadOutlined />} onTouchEnd={() => handleDownloadFiles(postId, 'attachment', files)} />
-      <Button icon={<ShareAltOutlined />} />
-    </Space>
-  )
-}
+const ButtonLike = styled(Button)`
+  border-bottom-right-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+`
 
-// const Space = styled(Space)`
-//   margin: auto;
-//   display: flex;
-//   text-align: center;
-//   justify-content: center;
-//   background-color: #e5e0e2;
-//   width: auto;
-//   border-radius: 100px;
-//   gap: 0 !important;
-// `
-
-// const Button = styled(Button)`
-//   border-bottom-right-radius: 0 !important;
-//   border-top-right-radius: 0 !important;
-// `
-
-// const Button = styled(Button)`
-//   border-bottom-left-radius: 0 !important;
-//   border-top-left-radius: 0 !important;
-// `
+const ButtonDislike = styled(Button)`
+  border-bottom-left-radius: 0 !important;
+  border-top-left-radius: 0 !important;
+`

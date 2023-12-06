@@ -27,7 +27,7 @@ const RightSideBar: React.FC = () => {
           }
       }
         >
-        <UserList/>
+       <UserList/>
         </Layout.Sider>
       )}
     </>

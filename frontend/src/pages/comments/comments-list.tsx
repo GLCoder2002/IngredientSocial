@@ -22,7 +22,6 @@ interface DataType {
 }
 
 function CommentsList({ id, updatePost }:{id:any,updatePost:any}) {
-  //const { appSocket } = useSocket()
   const [initLoading, setInitLoading] = useState(true)
   const [list, setList] = useState<DataType[]>([])
   const [filter, setFilter] = useState('new')
@@ -33,7 +32,7 @@ function CommentsList({ id, updatePost }:{id:any,updatePost:any}) {
 
   useEffect(() => {
     const query = handleFilter(filter)
-    Http.get(`/api/v1/comment?postId=${id}&${query}`).then(res => {
+    Http.get(`/api/v1/comments?postId=${id}&${query}`).then(res => {
       setInitLoading(false)
       setList(res.data.data)
     })

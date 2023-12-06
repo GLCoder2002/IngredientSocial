@@ -5,6 +5,7 @@ import Comment from "../models/Comment"
 import Post, { IPost } from "../models/Post"
 import cloudinary from "../utils/cloudconfig"
 import mongoose from "mongoose"
+import { io } from "../utils/socket"
 
 
 export const createPost = async (req: any, res: any, next: any) => {
@@ -46,52 +47,74 @@ export const createPost = async (req: any, res: any, next: any) => {
       post: savedPost,
     })
   } catch (err: any) {
-    // const urlParts = req.file.path.split('/')
-    // const firstPart = urlParts?.find(part => part === "videos");
-    // const lastPart = urlParts![urlParts!.length - 1]
-    // const lastPartId = lastPart.split(".")[0];
-    // const path = `${firstPart}/${lastPartId}`
-    // cloudinary.uploader.destroy(path);
+
     return next(new apiErrorResponse(`${err.message}`, 500))
   }
 }
 
 export const getAllPosts = async (req: any, res: any, next: any) => {
   try {
-    const reqQuery = req.query
-    const trending = reqQuery.tab || null
-    let keyWord = reqQuery.keyword || null
-    const results: any = {}
-    let options: any = {}
-    if (keyWord) {
-      keyWord = keyWord?.replace(/-/g, ' ').toLowerCase()
-      const rgx = (pattern: any) => new RegExp(`.*${pattern}.*`)
-      const searchRegex = rgx(keyWord)
-      options = {
-        $or: [{ title: { $regex: searchRegex, $options: 'i' } }, { content: { $regex: searchRegex, $options: 'i' } }],
+    const reqQuery = req.query;
+    const page = parseInt(reqQuery.page) || 1
+    const limit = parseInt(reqQuery.limit) || 10
+    const offset = (page - 1) * limit
+    const trending = reqQuery.tab || null;
+    const endIndex = page * limit
+    let keyWord = reqQuery.keyword || null;
+    const results: any = {};
+
+    if (endIndex < (await Post.countDocuments().exec())) {
+      results['next'] = {
+        page: page + 1,
+        limit: limit,
       }
     }
 
-    let posts = Post.find(options)
-      .select('title meta likes dislikes createdAt comments content')
-      .populate({
-        path: 'posterId',
-        select: ['name', 'avatar', 'email', 'role'],
-      })
-
-    if (trending == 'hot') {
-      posts.sort({ 'meta.views': -1 })
-    } else if (trending == 'best') {
-      posts.sort({ 'meta.likesCount': -1 })
-    } else if (trending == 'worst') {
-      posts.sort({ 'meta.dislikesCount': -1 })
-    } else if (trending == 'oldest') {
-      posts.sort({ createdAt: 1 })
-    } else {
-      posts.sort({ createdAt: -1 })
+    if (offset > 0) {
+      results['previous'] = {
+        page: page - 1,
+        limit: limit,
+      }
     }
 
-    results['results'] = await posts.exec()
+    let options: any = {};
+
+    if (keyWord) {
+      keyWord = keyWord?.replace(/-/g, ' ').toLowerCase();
+      const rgx = (pattern: any) => new RegExp(`.*${pattern}.*`);
+      const searchRegex = rgx(keyWord);
+      options = {
+        $or: [
+          { title: { $regex: searchRegex, $options: 'i' } },
+          { content: { $regex: searchRegex, $options: 'i' } },
+        ],
+      };
+    }
+
+    let posts = Post.find(options)
+      .select('title meta likes dislikes createdAt comments content video ingredients')
+      .populate({
+        path: 'posterId',
+        select: ['username', 'avatar', 'email', 'role'],
+      })
+      .populate({
+        path: 'ingredients',
+        select: ['username', 'description', 'image'],
+      });
+
+    if (trending == 'hot') {
+      posts.sort({ 'meta.views': -1 });
+    } else if (trending == 'best') {
+      posts.sort({ 'meta.likesCount': -1 });
+    } else if (trending == 'worst') {
+      posts.sort({ 'meta.dislikesCount': -1 });
+    } else if (trending == 'oldest') {
+      posts.sort({ createdAt: 1 });
+    } else {
+      posts.sort({ createdAt: -1 });
+    }
+
+    results['results'] = await posts.limit(limit).skip(offset).exec();
 
     res.status(200).json({
       success: true,
@@ -99,11 +122,12 @@ export const getAllPosts = async (req: any, res: any, next: any) => {
       next: results['next'],
       previous: results['previous'],
       data: results['results'],
-    })
+    });
   } catch (err: any) {
-    return next(new apiErrorResponse(`${err.message}`, 500))
+    return next(new apiErrorResponse(`${err.message}`, 500));
   }
-}
+};
+
 
 // export const findPostByIngredients = async (req:any, res:any, next:any) => {
 //   try {
@@ -140,19 +164,18 @@ export const getTotalPost = async (req: any, res: any, next: any) => {
 
 export const getAllPostsOfUser = async (req: any, res: any, next: any) => {
   try {
-    const option = req.query.uid
-    const userId = option == 'me' ? req.payload.user.id : option
+    const userId = req.params.posterId
 
     const user = await User.findById(userId)
     if (!user) {
       return next(new apiErrorResponse(`Not found user id ${userId}`, 500))
     }
-    const posts = await Post.find({ posterId: { $in: user._id } })
+    const posts = await Post.find({ posterId: userId })
       .select('title likes dislikes meta createdAt comments content video')
 
       .populate({
         path: 'posterId',
-        select: ['name', 'avatar', 'email', 'role'],
+        select: ['username', 'avatar', 'email', 'role'],
       })
       .populate('ingredients')
     res.status(200).json({
@@ -177,7 +200,7 @@ export const getAllPostsByIngredients = async (req: any, res: any, next: any) =>
       .select('title likes dislikes meta createdAt comments content video')
       .populate({
         path: 'posterId',
-        select: ['name', 'avatar', 'email', 'role'],
+        select: ['username', 'avatar', 'email', 'role'],
       })
       .populate('ingredients')
     res.status(200).json({
@@ -196,8 +219,9 @@ export const getPost = async (req: any, res: any, next: any) => {
     const post = await Post.findById(req.query.id)
       .populate({
         path: 'posterId',
-        select: ['name', 'avatar', 'email', 'role']
+        select: ['username', 'avatar', 'email', 'role']
       })
+      .populate('ingredients')
     if (post?.meta?.views !== undefined) {
       post?.meta?.views + 1
     }
@@ -216,10 +240,10 @@ export const getDataSuggestion = async (req: any, res: any, next: any) => {
     const posts = await Post.find().select('title')
     const users = await User
       .find()
-      .select('name')
+      .select('username')
     const ingredients = await Ingredient
       .find()
-      .select('name')
+      .select('username')
     res.status(200).json({
       success: true,
       data: posts,
@@ -288,13 +312,9 @@ export const deletePost = async (req: any, res: any, next: any) => {
 
 export const editPost = async (req: any, res: any, next: any) => {
   try {
-    //init req body obj
+
     const reqBody = req.body
-
-    //get post id from req params prop
     const { PostId } = req.params
-
-    //update post with req body obj
     const updatedPost = await Post.findByIdAndUpdate(PostId, reqBody, { new: true, useFindAndModify: false })
       .populate('posterId')
       .populate({
@@ -318,110 +338,113 @@ export const editPost = async (req: any, res: any, next: any) => {
   }
 }
 
-// export const likePost = async (req: any, res: any, next: any) => {
-//   try {
-//     const { PostId } = req.body
-//     const userId = req.payload.user.id
-//     let post = await Post.findById(PostId).select('createdAt dislikes likes')
-//     if (post!.like?.indexOf(userId) >= 0) {
-//       return res.status(200).json({ success: true, message: 'already like!' })
-//     }
-//     if (post?.dislikes.indexOf(userId) >= 0) {
-//       post.dislikes = post.dislikes.filter(like => like.toString() !== userId)
-//     }
-//     if (post.likes.indexOf(userId) === -1) {
-//       post.likes.push(userId)
-//     }
-//     await post.save()
-//     User.findById(userId)
-//       .select('comments name email avatar role')
-//       .then(user => {
-//         io.emit('votes', { action: 'like', PostId: PostId, user: user })
-//       })
-//     res.status(200).json({ success: true, message: 'post liked!' })
-//   } catch (error:any) {
-//     return next(new apiErrorResponse(`${error.message}`, 500))
-//   }
-// }
+export const likePost = async (req: any, res: any, next: any) => {
+  try {
+    const { postId } = req.body;
+    const userId = req.payload.user.id;
+    let post = await Post.findById(postId).select('createdAt dislikes likes');
 
-// export const disLikePost = async (req: any, res: any, next: any) => {
-//   try {
-//     const { PostId } = req.body
-//     const userId = req.payload.user.id
-//     let post = await Post.findById(PostId).select('createdAt dislikes likes')
-//     if (post!.dislike!.indexOf(userId) >= 0) {
-//       return res.status(200).json({ success: true, message: 'already dislike!' })
-//     }
-//     if (post!.like!.indexOf(userId) >= 0) {
-//       post!.like = post!.like!.filter(like => like.toString() !== userId)
-//     }
-//     if (post!.dislike!.indexOf(userId) === -1) {
-//       post!.dislike!.push(userId)
-//     }
+    if (post!.likes!.indexOf(userId) >= 0) {
+      return res.status(200).json({ success: true, message: 'already like!' });
+    }
 
-//     await post?.save()
-//     User.findById(userId)
-//       .select('comments name email avatar role')
-//       .then(user => {
-//         io.emit('votes', { action: 'dislike', PostId: PostId, user: user })
-//       })
-//     res.status(200).json({ success: true, message: 'post liked!' })
-//   } catch (error:any) {
-//     return next(new apiErrorResponse(`${error.message}`, 500))
-//   }
-// }
+    if (post!.dislikes!.indexOf(userId) >= 0) {
+      post!.dislikes = post!.dislikes!.filter(like => like.toString() !== userId);
+    }
 
-// export const omitVotePost = async (req: any, res: any, next: any) => {
-//   try {
-//     const { PostId } = req.body
-//     const userId = req.payload.user.id
-//     let post = await post.findById(PostId).select('createdAt dislikes likes')
-//     if (post.dislikes.indexOf(userId) === -1 && post.likes.indexOf(userId) === -1) {
-//       return res.status(200).json({ success: true, message: 'already omit!' })
-//     }
-//     if (post.likes.indexOf(userId) >= 0) {
-//       post.likes = post.likes.filter(like => like.toString() !== userId)
-//     }
-//     if (post.dislikes.indexOf(userId) >= 0) {
-//       post.dislikes = post.dislikes.filter(like => like.toString() !== userId)
-//     }
+    if (post!.likes!.indexOf(userId) === -1) {
+      post!.likes!.push(userId);
+    }
+    await post?.save();
+    User.findById(userId)
+      .select('comments username email avatar role')
+      .then(user => {
+        io.emit('votes', { action: 'like', postId: postId, user: user })
+      })
+    res.status(200).json({ success: true, message: 'post liked!' });
+  } catch (error:any) {
+    return next(new apiErrorResponse(`${error.message}`, 500));
+  }
+};
 
-//     await post.save()
-//     User.findById(userId)
-//       .select('comments name email avatar role')
-//       .then(user => {
-//         io.emit('votes', { action: 'omit', PostId: PostId, user: user })
-//       })
-//     res.status(200).json({ success: true, message: 'omit oke!' })
-//   } catch (error) {
-//     return next(new apiErrorRespone(`${error.message}`, 500))
-//   }
-// }
 
-// export const getPostLikes = async (req: any, res: any, next: any) => {
-//   try {
-//     const { PostId } = req.query
+export const disLikePost = async (req: any, res: any, next: any) => {
+  try {
+    const { postId } = req.body
+    const userId = req.payload.user.id
+    let post = await Post.findById(postId).select('createdAt dislikes likes')
+    if (post!.dislikes!.indexOf(userId) >= 0) {
+      return res.status(200).json({ success: true, message: 'already dislike!' })
+    }
+    if (post!.likes!.indexOf(userId) >= 0) {
+      post!.likes = post!.likes!.filter(like => like.toString() !== userId)
+    }
+    if (post!.dislikes!.indexOf(userId) === -1) {
+      post!.dislikes!.push(userId)
+    }
+    await post?.save()
+    User.findById(userId)
+      .select('comments username email avatar role')
+      .then(user => {
+        io.emit('votes', { action: 'like', postId: postId, user: user })
+      })
+    res.status(200).json({ success: true, message: 'post liked!' })
+  } catch (error:any) {
+    return next(new apiErrorResponse(`${error.message}`, 500))
+  }
+}
 
-//     const Posts = await post.findById(PostId)
-//       .populate({
-//         path: 'likes',
-//         select: ['name', 'avatar'],
-//       })
-//       .populate({
-//         path: 'dislikes',
-//         select: ['name', 'avatar'],
-//       })
+export const omitVoteIdea = async (req: any, res: any, next: any) => {
+  try {
+    const { postId } = req.body
+    const userId = req.payload.user.id
+    let post = await Post.findById(postId).select('createdAt dislikes likes')
+    if (post!.dislikes!.indexOf(userId) === -1 && post!.likes!.indexOf(userId) === -1) {
+      return res.status(200).json({ success: true, message: 'already omit!' })
+    }
+    if (post!.likes!.indexOf(userId) >= 0) {
+      post!.likes = post!.likes!.filter(like => like.toString() !== userId)
+    }
+    if (post!.dislikes!.indexOf(userId) >= 0) {
+      post!.dislikes = post!.dislikes!.filter(like => like.toString() !== userId)
+    }
 
-//     res.status(201).json({
-//       success: true,
-//       message: 'post likers fetched succesfully!',
-//       likes: Posts.likes,
-//       dislikes: Posts.dislikes,
-//     })
-//   } catch (error) {
-//     return next(new apiErrorRespone(`${error.message}`, 500))
-//   }
-// }
+    await post?.save()
+    User.findById(userId)
+      .select('comments username email avatar role')
+      .then(user => {
+        io.emit('votes', { action: 'omit', postId: postId, user: user })
+      })
+    res.status(200).json({ success: true, message: 'omit oke!' })
+  } catch (error:any) {
+    return next(new apiErrorResponse(`${error.message}`, 500))
+  }
+}
+
+export const getPostLikes = async (req: any, res: any, next: any) => {
+  try {
+    const { PostId } = req.query
+
+    const posts = await Post.findById(PostId)
+      .populate({
+        path: 'likes',
+        select: ['username', 'avatar'],
+      })
+      .populate({
+        path: 'dislikes',
+        select: ['username', 'avatar'],
+      })
+
+    res.status(201).json({
+      success: true,
+      message: 'post likers fetched succesfully!',
+      likes: posts?.likes,
+      dislikes: posts?.dislikes,
+    })
+  } catch (error:any) {
+    return next(new apiErrorResponse(`${error.message}`, 500))
+  }
+}
 
 export const postByTime = async (req: any, res: any, next: any) => {
   try {

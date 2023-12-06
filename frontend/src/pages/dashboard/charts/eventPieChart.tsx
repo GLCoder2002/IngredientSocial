@@ -78,14 +78,14 @@ function IngredientClassifyPieChart() {
         .sort((a, b) => b.value - a.value)
         .slice(0, 5)
 
-      const totalIdea = allIngredients
+      const totalIngredient = allIngredients
         .map(ingredient => ({ name: ingredient.name, value: ingredient.posts.length }))
         .sort((a, b) => b.value - a.value)
         .slice(5)
-      const restData = totalIdea.length
+      const restData = totalIngredient.length
         ? {
             name: 'Others',
-            value: totalIdea.flatMap(ingredient => ingredient.value).reduce((acc, cur) => acc + cur),
+            value: totalIngredient.flatMap(ingredient => ingredient.value).reduce((acc, cur) => acc + cur),
           }
         : {}
       return [...top5Data, restData]

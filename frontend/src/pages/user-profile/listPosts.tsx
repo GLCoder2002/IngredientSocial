@@ -3,17 +3,17 @@ import { Http } from 'api/http'
 import PostCard from 'pages/posts/post-card'
 import { useEffect, useState } from 'react'
 
-export default function ListPosts({ userId }:any) {
-  const [myPost, setMyPost] = useState([])
+export default function ListPosts({ posterId }:any) {
+  const [myPost, setMyPost] = useState<any>([])
   const [loadmore, setLoadmore] = useState(0)
   const [loading, setLoading] = useState(true)
   useEffect(() => {
     setLoading(true)
     const getMyPost = async () => {
-      await Http.get('/api/v1/posts')
+      await Http.get(`/api/v1/posts/postsOfUser/${posterId}`)
         .then(res => {
-          setMyPost(res.data.data.filter((post:any) => post.likes.includes(userId)))
-          setLoadmore(res.data.data.filter((post:any) => post.likes.includes(userId)).length)
+          setMyPost(res.data.data)
+          setLoadmore(res.data.data.length)
         })
         .catch((err:any) => message.error('Fail to get post list'))
         .finally(() => setLoading(false))
@@ -46,7 +46,7 @@ export default function ListPosts({ userId }:any) {
       itemLayout="vertical"
       size="large"
       dataSource={myPost.slice(0, loadmore)}
-      renderItem={post => <PostCard key={`${post}`} post={post} isLoading={loading}></PostCard>}
+      renderItem={post => <PostCard key={`${post}`} post={post} isLoading={loading} width='550px' height='300px'></PostCard>}
     />
   )
 }

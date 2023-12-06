@@ -26,7 +26,7 @@ export default function CategoryDetails() {
     getCategoryDetails()
   }, [id])
 
-  const navigateIdeaForm = () => {
+  const navigateIngredientForm = () => {
     navigate(`/ingredients`)
   }
   return (
@@ -37,7 +37,7 @@ export default function CategoryDetails() {
       style={{ borderRadius: 0,padding:'10px 0px 0px 20px', height: '100%'}}
       headStyle={{ backgroundColor: '#1677ff6d', borderRadius: 0 }}
     >
-      <Title style={{ margin: '20px 0px 16px', fontSize: 18, color: '#1677ff' }}>Ideas in this category:</Title>
+      <Title style={{ margin: '20px 0px 16px', fontSize: 18, color: '#1677ff' }}>Ingredients in this category:</Title>
 
       {category?.ingredients?.length ? (
         <List
@@ -53,10 +53,10 @@ export default function CategoryDetails() {
         <Empty
           image="https://gw.alipayobjects.com/zos/antfincdn/ZHrcdLPrvN/empty.svg"
           imageStyle={{ height: 60 }}
-          description={<span>There is no any idea yet</span>}
+          description={<span>There is no any ingredient yet</span>}
           style={{ width: '100%', padding: 20 }}
         >
-          <Button type="primary" onClick={() => navigateIdeaForm()}>
+          <Button type="primary" onClick={() => navigateIngredientForm()}>
             Create Now
           </Button>
         </Empty>

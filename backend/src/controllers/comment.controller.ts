@@ -1,7 +1,7 @@
-import Comment from "models/Comment"
-import Post from "models/Post"
-import User from "models/User"
-import apiErrorResponse from "utils/apiErrorResponse"
+import Comment from "../models/Comment"
+import Post from "../models/Post"
+import User from "../models/User"
+import apiErrorResponse from "../utils/apiErrorResponse"
 
 
 export const createComment = async (req: any, res: any, next: any) => {
@@ -49,7 +49,7 @@ export const getComments = async (req: any, res: any, next: any) => {
 
     let comments = Comment.find(options).populate({
       path: 'userId',
-      select: ['name', 'avatar', 'email', 'role'],
+      select: ['username', 'avatar', 'email', 'role'],
     })
 
     if (trending == 'best') {
@@ -63,10 +63,7 @@ export const getComments = async (req: any, res: any, next: any) => {
       comments.sort({ date: -1 })
     }
 
-    results['results'] = await comments
-      // .limit(5)
-      // .skip(offset)
-      .exec()
+    results['results'] = await comments.exec()
 
     res.status(200).json({
       success: true,
@@ -90,7 +87,7 @@ export const getAllCommentsOfUser = async (req: any, res: any, next: any) => {
     const comments = await Comment.find({ posterId: { $in: user._id } })
       .populate({
         path: 'userId',
-        select: ['name', 'avatar', 'email', 'role'],
+        select: ['username', 'avatar', 'email', 'role'],
       })
       .populate('categories')
     res.status(200).json({

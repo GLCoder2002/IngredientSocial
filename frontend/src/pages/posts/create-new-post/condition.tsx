@@ -1,4 +1,5 @@
 import { Carousel, Modal } from 'antd'
+import Link from 'antd/es/typography/Link'
 const contentStyle: React.CSSProperties = {
   height: '50px',
   color: '#fff',
@@ -23,44 +24,37 @@ export default function TermCondition({ isOpen, onCloseModal }:any) {
     >
       <Carousel autoplay>
         <div>
-          <h3 style={contentStyle}>1</h3>
+          <h3 style={contentStyle}>1.Acceptance of Terms:</h3>
           <p>
-            CMS is a vast network of communities that are created, run, and populated by you, the CMS users. Through
-            these communities, you can post, comment, vote, discuss, learn, debate, support, and connect with people who
-            share your interests, and we encourage you to find—or even create—your home on CMS. While not every
-            community may be for you (and you may find some unrelatable or even offensive), no community should be used
-            as a weapon. Communities should create a sense of belonging for their members, not try to diminish it for
-            others. Below the rules governing each community are the platform-wide rules that apply to everyone on CMS.
-            These rules are enforced by us, the admins. CMS and its communities are only what we make of them together,
-            and can only exist if we operate by a shared set of rules. We ask that you abide by not just the letter of
-            these rules, but the spirit as well.
+          By uploading content to Social Ingredient, 
+          you agree to comply with and be bound by the 
+          following terms and conditions. If you do not agree to these 
+          terms, please do not upload any content.
           </p>
         </div>
         <div>
-          <h3 style={contentStyle}>2</h3>
+          <h3 style={contentStyle}>2.Content Ownership:</h3>
           <p>
-            Likewise, everyone on CMS should have an expectation of privacy and safety, so please respect the privacy
-            and safety of others. Every community on CMS is defined by its users. Some of these users help manage the
-            community as moderators. The culture of each community is shaped explicitly, by the community rules enforced
-            by moderators, and implicitly, by the upvotes, downvotes, and discussions of its community members. Please
-            abide by the rules of communities in which you participate and do not interfere with those in which you are
-            not a member.
+          You retain ownership of the content you upload to Social Ingredient.
+          However, by uploading content, you grant Social Ingredient a worldwide,
+          non-exclusive, royalty-free license to use, reproduce, modify, adapt, publish, 
+          translate, create derivative works from, distribute, perform, and display the content.
           </p>
         </div>
         <div>
-          <h3 style={contentStyle}>Rules</h3>
+          <h3 style={contentStyle}>3.Content Guidelines:</h3>
           <p>
-            Rule 1 Remember the human. CMS is a place for creating community and belonging, not for attacking
-            marginalized or vulnerable groups of people. Everyone has a right to use CMS free of harassment,
-            bullying, and threats of violence. Communities and users that incite violence or that promote hate based on
-            identity or vulnerability will be banned. Rule 2 Abide by community rules. Post authentic content into
-            communities where you have a personal interest, and do not cheat or engage in content manipulation
-            (including spamming, vote manipulation, ban evasion, or subscriber fraud) or otherwise interfere with or
-            disrupt CMS communities. Rule 3 Respect the privacy of others. Instigating harassment, for example by
-            revealing someone’s personal or confidential information, is not allowed. Never post or threaten to post
-            intimate or sexually-explicit media of someone without their consent. Rule 4 Do not post or encourage the
-            posting of sexual or suggestive content involving minors. Rule 5 You don’t have to use your real name to use
-            CMS, but don’t impersonate an individual or an entity in a misleading or deceptive manner.
+          You agree not to upload content that violates any applicable laws,
+          infringes on the rights of others, or is otherwise inappropriate. 
+          Social Ingredient reserves the right to remove any content that violates these guidelines.
+          </p>
+        </div>
+        <div>
+          <h3 style={contentStyle}>3.Community Standards:</h3>
+          <p>
+          Social Ingredient has community standards in place to ensure a positive and safe environment.
+          By uploading content, you agree to abide by these community standards, which are outlined in 
+          <Link href='https://transparency.fb.com/vi-vn/policies/community-standards/?source=https%3A%2F%2Fwww.facebook.com%2Fcommunitystandards%2F'>Policy example</Link>.
           </p>
         </div>
       </Carousel>
