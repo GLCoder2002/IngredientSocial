@@ -14,6 +14,7 @@ import { Http } from 'api/http'
 import { handleValidateFile, onChangeUpload, previewFile } from 'components/upload/uploadImage'
 import dayjs from 'dayjs'
 import { useSubscription } from 'libs/global-state-hooks'
+import { enqueueSnackbar } from 'notistack'
 import { userStore } from 'pages/auth/userStore'
 import { useState } from 'react'
 
@@ -28,7 +29,6 @@ function EditProfileForm() {
 
   userStore.subscribe(newState => {
     form.setFieldsValue({
-      name: newState?.username,
       username: newState?.username,
       phone: newState.phone,
       email: !newState.email || newState.email === 'None' ? '' : newState.email,
@@ -57,19 +57,18 @@ function EditProfileForm() {
       return message.error('Please input the valid fields')
     }
 
-
-    await Http.put(`/api/v1/users/updateProfile/${state._id
-      }`, formData).then(() => {
-        message.success('Updated profile successfully!')
+    await Http.put(`/api/v1/users/updateProfile/${state._id}`, formData)
+    .then(() => {
         setState({
-          name: form.getFieldValue('name'),
           username: form.getFieldValue('username'),
           phone: form.getFieldValue('phone'),
           email: form.getFieldValue('email'),
           birthday: form.getFieldValue('birthday')?.$d,
           avatar: avatar[0]?.originFileObj
         })
-      }).catch(message.error('Failed to update profile!')).finally(() => setLoading(false))
+      })
+      .catch((err:any)=>enqueueSnackbar(err.message,{variant:'error'}))
+      .finally(() => setLoading(false))
   }
 
   return (

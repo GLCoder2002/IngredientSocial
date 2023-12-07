@@ -47,9 +47,6 @@ export default function EditIngredientModal({
       message.error('Some of your fields are empty!');
       return;
     }
-
-    setLoading(true);
-
     const formData = new FormData();
     formData.append('name', form.getFieldValue('name'));
     formData.append('category', form.getFieldValue('category'));
@@ -58,10 +55,8 @@ export default function EditIngredientModal({
     if (imageState.length > 0) {
       formData.append('image', imageState[0].originFileObj);
     }
-
     try {
       const ingredientUpdate = await Http.put(`/api/v1/ingredients/update/${currentIngredient?._id}`, formData);
-
       await setIngredientList(
         ingredientList.map((ingredient: any) => {
           if (ingredient._id === currentIngredient?._id) {
@@ -70,7 +65,7 @@ export default function EditIngredientModal({
           return ingredient;
         })
       );
-
+      setLoading(true);
       onCloseModal();
     } catch (error: any) {
       console.error('Error during upload:', error);

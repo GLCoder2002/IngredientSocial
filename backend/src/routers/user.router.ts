@@ -1,12 +1,13 @@
 import { changePassword, deleteUser, findUser, getAllUsers, getTotalAccounts, updateUser } from "../controllers/user.controller";
 import express from "express";
 import { authProtect, authorize } from "../middlewares/auth";
+import { uploadMulter } from "../utils/cloudconfig";
 
 const userRouter = express.Router();
 userRouter.get('/', authProtect, getAllUsers)
 userRouter.delete('/deleteUser/:userId', authProtect, authorize(['admin']), deleteUser)
 userRouter.put('/changePassword', authProtect, changePassword)
-userRouter.put('/updateProfile/:userId', authProtect, updateUser)
+userRouter.put('/updateProfile/:userId',uploadMulter.single('avatar'), authProtect, updateUser)
 userRouter.get('/totalUsers', authProtect, authorize(['admin']), getTotalAccounts)
 userRouter.get('/getProfile/:id', authProtect, findUser)
 export default userRouter

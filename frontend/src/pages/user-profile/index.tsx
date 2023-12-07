@@ -117,7 +117,7 @@ if (!isAdmin()) {
           activeTabKey={activeTabKey}
           onTabChange={setActiveTabKey}>
           {
-          activeTabKey === 'edit' ? <EditProfileForm/>: <ListPosts userId={
+          activeTabKey === 'edit' ? <EditProfileForm/>: <ListPosts posterId={
             state._id
           }/>
         } </Card>

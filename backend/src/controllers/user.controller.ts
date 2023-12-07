@@ -53,16 +53,26 @@ export const changePassword = async (req: any, res: any, next: any) => {
 
 export const updateUser = async (req: any, res: any, next: any) => {
   try {
-    if (req.file.path) {
-      req.body.avatar = req.file.path;
-    }
+    const {username, email, birthday, phone, avatar = req?.file?.path} = req.body
     const updatedUser = await User.findByIdAndUpdate(
       req.params.userId,
-      { $set: req.body },
+      { $set:{
+      username,
+      email,
+      birthday,
+      phone,
+      avatar
+      }},
       { new: true }
     ).select('-password');
 
     if (!updatedUser) {
+      const urlParts = avatar.split('/')
+      const firstPart = urlParts?.find(part => part === "images");
+      const lastPart = urlParts![urlParts!.length - 1]
+      const lastPartId = lastPart.split(".")[0];
+      const path = `${firstPart}/${lastPartId}`
+      cloudinary.uploader.destroy(path);
       return next(new apiErrorResponse(`Could not update`, 400));
     }
 
