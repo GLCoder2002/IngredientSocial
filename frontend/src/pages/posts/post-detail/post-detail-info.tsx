@@ -9,6 +9,7 @@ const { Text } = Typography
 export default function PostDetailInfo({ item }: {
   item: any
 }) {
+  console.log(item)
   return (<>
     <Space direction="horizontal">
       {item?.posterId?.name ? (<Avatar style={{ margin: '0px' }}

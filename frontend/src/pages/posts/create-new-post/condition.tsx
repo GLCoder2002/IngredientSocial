@@ -50,7 +50,7 @@ export default function TermCondition({ isOpen, onCloseModal }:any) {
           </p>
         </div>
         <div>
-          <h3 style={contentStyle}>3.Community Standards:</h3>
+          <h3 style={contentStyle}>4.Community Standards:</h3>
           <p>
           Social Ingredient has community standards in place to ensure a positive and safe environment.
           By uploading content, you agree to abide by these community standards, which are outlined in 

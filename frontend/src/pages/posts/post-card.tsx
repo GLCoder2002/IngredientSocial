@@ -61,10 +61,10 @@ function PostStyleCard({ post, isLoading, width, height }:any) {
   const actions =
     post?.posterId?._id === _id
       ? [
-          <EditTwoTone key="edit" onClick={() => navigate(`/posts/edit?id=${post?._id}`)} />,
+          <EditTwoTone key="edit" onClick={() => navigate(`/post/edit?id=${post?._id}`)} />,
           <Popconfirm
             title="Warning"
-            description="Are you sure you wanna delete it??"
+            description="Are you sure to delete it?"
             open={open}
             onConfirm={handleOk}
             onCancel={handleCancel}

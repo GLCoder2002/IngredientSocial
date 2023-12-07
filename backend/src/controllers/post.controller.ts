@@ -10,10 +10,10 @@ import { io } from "../utils/socket"
 
 export const createPost = async (req: any, res: any, next: any) => {
   try {
-    const postBody = req.body
-    postBody.video = req?.file?.path
-    if (!postBody.content || postBody.content == '' || postBody.title == '') {
-      const urlParts = postBody.video.split('/')
+    const reqBody = req.body
+    reqBody.video = req?.file?.path
+    if (!reqBody.content || reqBody.content == '' || reqBody.title == '') {
+      const urlParts = reqBody.video.split('/')
       const firstPart = urlParts?.find(part => part === "videos");
       const lastPart = urlParts![urlParts!.length - 1]
       const lastPartId = lastPart.split(".")[0];
@@ -22,16 +22,16 @@ export const createPost = async (req: any, res: any, next: any) => {
       return next(new apiErrorResponse('Please fill the properties of your post', 400))
     }
 
-    if (postBody?.ingredients?.length) {
-      postBody.ingredients = postBody?.ingredients?.split(',')?.map(i => new mongoose.Types.ObjectId(i))
+    if (reqBody?.ingredients?.length) {
+      reqBody.ingredients = reqBody?.ingredients?.split(',')?.map(i => new mongoose.Types.ObjectId(i))
     }
-    const newPost: IPost = Object.assign({}, postBody, { posterId: req.payload.user.id })
-    
+    const newPost: IPost = Object.assign({}, reqBody, { posterId: req.payload.user.id })
+
 
     let savedPost = await Post.create(newPost)
     const user = await User.findById(savedPost.posterId)
-    if(postBody.ingredients){
-      const addIngredients = postBody.ingredients.map(async ingredient =>{
+    if (reqBody.ingredients) {
+      const addIngredients = reqBody.ingredients.map(async ingredient => {
         let addIngredient = await Ingredient.findById(ingredient)
         addIngredient?.posts?.push(savedPost._id)
         await addIngredient?.save()
@@ -40,14 +40,47 @@ export const createPost = async (req: any, res: any, next: any) => {
     }
     user?.posts?.push(savedPost._id)
     user?.save()
-
+    
     res.status(200).json({
       success: true,
       message: 'post is created successfully',
       post: savedPost,
     })
   } catch (err: any) {
+    
+    return next(new apiErrorResponse(`${err.message}`, 500))
+  }
+}
 
+export const editPost = async (req: any, res: any, next: any) => {
+  try {
+
+    const reqBody = req.body
+    const { postId } = req.params
+
+    if (reqBody?.ingredients?.length) {
+      reqBody.ingredients = reqBody?.ingredients?.split(',')?.map(i => new mongoose.Types.ObjectId(i))
+    }
+
+    const updatedPost = await Post.findByIdAndUpdate(postId, reqBody, { new: true, useFindAndModify: false })
+      .populate('posterId')
+      .populate({
+        path: 'comments',
+        populate: {
+          path: 'userId',
+        },
+      })
+      .populate('likes')
+
+    if (!updatedPost) {
+      return next(new apiErrorResponse(`Not found post id ${postId}`, 404))
+    }
+
+    updatedPost.video = reqBody.video ? reqBody.video : updatedPost.video
+    await updatedPost.save()
+
+    res.status(202).json({ message: 'post succesfully updated!', updatedPost })
+  } catch (err: any) {
     return next(new apiErrorResponse(`${err.message}`, 500))
   }
 }
@@ -137,7 +170,7 @@ export const getAllPosts = async (req: any, res: any, next: any) => {
 //   } catch (error:any) {
 //     next(new apiErrorResponse(`${error.message}`,500))
 //   }
-  
+
 // }
 
 export const getTotalPost = async (req: any, res: any, next: any) => {
@@ -249,15 +282,15 @@ export const getDataSuggestion = async (req: any, res: any, next: any) => {
       data: posts,
       count: posts.length,
     })
-  } catch (err:any) {
+  } catch (err: any) {
     return next(new apiErrorResponse(`${err.message}`, 500))
   }
 }
 
 export const deletePost = async (req: any, res: any, next: any) => {
   try {
-    const { PostId } = req.params
-    const deletedPost = await Post.findByIdAndDelete(PostId)
+    const { postId } = req.params
+    const deletedPost = await Post.findByIdAndDelete(postId)
     const url = deletedPost?.video
     const urlParts = url?.split('/')
     const firstPart = urlParts?.find(part => part === "videos");
@@ -266,7 +299,7 @@ export const deletePost = async (req: any, res: any, next: any) => {
     const path = `${firstPart}/${lastPartId}`
     cloudinary.uploader.destroy(path);
     if (!deletedPost) {
-      return next(new apiErrorResponse(`post id ${PostId} not found`, 404))
+      return next(new apiErrorResponse(`post id ${postId} not found`, 404))
     }
     const user = await User.findById(deletedPost.posterId)
       .populate('posts')
@@ -283,60 +316,27 @@ export const deletePost = async (req: any, res: any, next: any) => {
           path: 'comments',
         },
       })
-    Comment.deleteMany({ PostId: deletedPost._id })
+    Comment.deleteMany({ postId: deletedPost._id })
 
     const newUserPosts = user?.posts?.filter(userI => userI._id.toString() !== deletedPost._id)
     const newUserComment = user?.comments?.filter(userC => userC._id.toString() !== deletedPost._id)
-    // if (deletedPost.ingredients.length > 0) {
-    //   const ingredients = await ingredient.find({ Posts: { $in: [deletedPost._id] } })
-    //   ingredients.forEach(ingredient => {
-    //     const newingredientPosts = ingredient.Posts.filter(PostI => PostI._id.toString() !== deletedPost._id)
-    //     ingredient.Posts = newingredientPosts
-    //     ingredient.save()
-    //   })
-    // }
-    // if (deletedPost.specialEvent) {
-    //   const specialEvent = await SpecialEvent.findOne({ Posts: { $in: [deletedPost._id] } })
-    //   const newSpecialEventPosts = specialEvent.Posts.filter(PostI => PostI._id.toString() !== deletedPost._id)
-    //   specialEvent.Posts = newSpecialEventPosts
-    //   specialEvent.save()
-    // }
+    if (deletedPost!.ingredients!.length > 0) {
+      const ingredients = await Ingredient.find({ Posts: { $in: [deletedPost._id] } })
+      ingredients.forEach(ingredient => {
+        const newIngredientPosts = ingredient!.posts!.filter(PostI => PostI._id.toString() !== deletedPost._id)
+        ingredient!.posts = newIngredientPosts
+        ingredient.save()
+      })
+    }
     user!.posts = newUserPosts
     user!.comments = newUserComment
     user?.save()
     res.status(200).json({ success: true, message: 'post is deleted!', deletedPost: deletedPost, user })
-  } catch (err:any) {
+  } catch (err: any) {
     return next(new apiErrorResponse(`${err.message}`, 500))
   }
 }
 
-export const editPost = async (req: any, res: any, next: any) => {
-  try {
-
-    const reqBody = req.body
-    const { PostId } = req.params
-    const updatedPost = await Post.findByIdAndUpdate(PostId, reqBody, { new: true, useFindAndModify: false })
-      .populate('posterId')
-      .populate({
-        path: 'comments',
-        populate: {
-          path: 'userId',
-        },
-      })
-      .populate('likes')
-
-    if (!updatedPost) {
-      return next(new apiErrorResponse(`Not found post id ${PostId}`, 404))
-    }
-
-    updatedPost.video = reqBody.video ? reqBody.video : updatedPost.video
-    await updatedPost.save()
-
-    res.status(202).json({ message: 'post succesfully updated!', updatedPost })
-  } catch (err:any) {
-    return next(new apiErrorResponse(`${err.message}`, 500))
-  }
-}
 
 export const likePost = async (req: any, res: any, next: any) => {
   try {
@@ -362,7 +362,7 @@ export const likePost = async (req: any, res: any, next: any) => {
         io.emit('votes', { action: 'like', postId: postId, user: user })
       })
     res.status(200).json({ success: true, message: 'post liked!' });
-  } catch (error:any) {
+  } catch (error: any) {
     return next(new apiErrorResponse(`${error.message}`, 500));
   }
 };
@@ -389,7 +389,7 @@ export const disLikePost = async (req: any, res: any, next: any) => {
         io.emit('votes', { action: 'like', postId: postId, user: user })
       })
     res.status(200).json({ success: true, message: 'post liked!' })
-  } catch (error:any) {
+  } catch (error: any) {
     return next(new apiErrorResponse(`${error.message}`, 500))
   }
 }
@@ -416,16 +416,16 @@ export const omitVoteIdea = async (req: any, res: any, next: any) => {
         io.emit('votes', { action: 'omit', postId: postId, user: user })
       })
     res.status(200).json({ success: true, message: 'omit oke!' })
-  } catch (error:any) {
+  } catch (error: any) {
     return next(new apiErrorResponse(`${error.message}`, 500))
   }
 }
 
 export const getPostLikes = async (req: any, res: any, next: any) => {
   try {
-    const { PostId } = req.query
+    const { postId } = req.query
 
-    const posts = await Post.findById(PostId)
+    const posts = await Post.findById(postId)
       .populate({
         path: 'likes',
         select: ['username', 'avatar'],
@@ -441,7 +441,7 @@ export const getPostLikes = async (req: any, res: any, next: any) => {
       likes: posts?.likes,
       dislikes: posts?.dislikes,
     })
-  } catch (error:any) {
+  } catch (error: any) {
     return next(new apiErrorResponse(`${error.message}`, 500))
   }
 }
@@ -456,7 +456,7 @@ export const postByTime = async (req: any, res: any, next: any) => {
       success: true,
       data: results,
     })
-  } catch (error:any) {
+  } catch (error: any) {
     return next(new apiErrorResponse(`${error.message}`, 500))
   }
 }

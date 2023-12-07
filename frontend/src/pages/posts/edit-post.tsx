@@ -1,26 +1,28 @@
-import { ArrowLeftOutlined, QuestionCircleOutlined } from '@ant-design/icons'
-import { Button, Card, Checkbox, Form, Input, Space, Spin, Typography, message } from 'antd'
-import { ContentState, EditorState, convertFromHTML, convertToRaw } from 'draft-js'
-import draftToHtml from 'draftjs-to-html'
+import { ArrowLeftOutlined, InboxOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import { Button, Card, Checkbox, Form, Input, Space, Spin, Typography, Upload, message } from 'antd'
 import { Http } from '../../api/http'
 import useWindowSize from '../../utils/useWindowSize'
 import { useEffect, useState } from 'react'
 import useRoleNavigate from 'libs/role-navigate'
 import { useQuery } from 'utils/useQuery'
+import { handleValidateFile, onChangeUpload } from 'components/upload/uploadImage'
+import IngredientTable from './create-new-post/ingredient-table'
+import TermCondition from './create-new-post/condition'
+import TextEditor from 'components/text-editor/text-editor'
 
 const { Title } = Typography
 
-export default function Editpost() {
+export default function EditPost() {
   const [data, setData] = useState<any>([])
   const [form] = Form.useForm()
   const navigate = useRoleNavigate()
   const query = useQuery()
   const id = query.get('id')
-  const initialState = () => EditorState.createEmpty()
-  const [editorState, setEditorState] = useState(initialState)
+  const [editorState, setEditorState] = useState<any>()
+  const [selectedIngredients, setSelectedIngredients] = useState<any>([])
   const [openModal, setOpenModal] = useState(false)
-  const [files, setFiles] = useState<any>([])
-  const [categories, setCategories] = useState<any>([])
+  const [loading, setLoading] = useState(false)
+  const [video, setVideo] = useState<any>([])
   const [isShown, setIsShown] = useState(false)
 
   useEffect(() => {
@@ -35,47 +37,47 @@ export default function Editpost() {
       await Http.get(`/api/v1/posts/detail?id=${id}`)
         .then(res => {
           setData([res.data.data])
-          const blocksFromHtml = convertFromHTML(`${res.data.data.content}`)
-          const initialState = () =>
-            EditorState.createWithContent(
-              ContentState.createFromBlockArray(blocksFromHtml.contentBlocks, blocksFromHtml.entityMap)
-            )
-          setEditorState(initialState)
+          setEditorState(res.data.data.content)
         })
         .catch(error => message.error('Failed to fetch post!'))
     getPost()
   }, [])
-
+  
   const onSubmitPost = async () => {
-    const content = draftToHtml(convertToRaw(editorState.getCurrentContent()))
+    const content = editorState
     if(content.length <= 20) {
-      return message.error("Your description is too sparsing")
+      return message.error("Your description is too spacing")
     }
-    const postForm = {
-      title: form.getFieldValue('title'),
-      content: `${content}`,
-      categories: categories,
+    const postForm = new FormData()
+    postForm.append('title',form.getFieldValue('title'))
+    postForm.append('content',`${content}`)
+    postForm.append('ingredients',selectedIngredients)
+    if(video.length > 0){
+      postForm.append('video', video[0].originFileObj)
     }
-    if(categories.length === 0) {
-      return message.error('At least one tags')
-    }
-
-    if (!postForm.title || !postForm.content) {
+    if (!form.getFieldValue('title')) {
       return message.error('Please fill the required fields')
     }
-    if (postForm.title.length < 30) {
-      return message.error('Your title is too sparsing')
+    if (form.getFieldValue('title').length < 30) {
+      return message.error('Your title is too spacing')
     }
     if (!form.getFieldValue('agreement')) {
       return message.error('You must agree to the terms and conditions')
     }
-
-    await Http.put(`/api/v1/post/edit/${id}`, postForm)
+    if(selectedIngredients.length === 0){
+      return message.error('At least one ingredient should be selected')
+    }
+    if(video.length === 0){
+      return message.error('Video required for specific instruction')
+    }
+    setLoading(true)
+    await Http.put(`/api/v1/posts/edit/${id}`, postForm)
       .then(res => {
         message.success('Edit post successfully!!')
         navigate('/')
       })
       .catch(error => message.error(error.message + '. Please try again'))
+      .finally(()=>setLoading(false))
   }
 
   const windowWidth = useWindowSize()
@@ -110,13 +112,42 @@ export default function Editpost() {
           ></Input>
         </Form.Item>
 
-        {/* <DefaultUpload normFile={normFile} files={files}></DefaultUpload> */}
-{/* 
-        {data[0]?.files.length > 0 && (
-          <Form.Item name="addedFile" label="Original files(can't remove)">
-            <FileDisplay files={data[0]?.files} isFit={true}></FileDisplay>
-          </Form.Item>
-        )} */}
+        <Form.Item name='content' label='Content' required >
+        <TextEditor editorState={editorState} setEditorState={setEditorState}/>
+        </Form.Item>
+        
+        <Form.Item name="ingredient"
+        required
+        label="Ingredient">
+        <IngredientTable setIngredientSelected={setSelectedIngredients} />
+        </Form.Item>
+        
+        <Form.Item
+        label="Video"
+        name="dragger"
+        valuePropName="fileList"
+        getValueFromEvent={e => {
+          const validFiles = handleValidateFile(e)
+          setVideo(validFiles)
+        }}
+        required
+      >
+        <Upload.Dragger
+          name="files"
+          accept="video/*"
+          beforeUpload={file => onChangeUpload(file)}
+          maxCount={1}
+        >
+          <p className="ant-upload-drag-icon">
+            <InboxOutlined />
+          </p>
+          <p className="ant-upload-text">Click or drag file to this area to upload</p>
+          <p className="ant-upload-hint">Maximum Size: 50MB</p>
+          <Typography.Text disabled style={{ marginLeft: '10px' }}>
+            Maximum Files: 1
+          </Typography.Text>
+        </Upload.Dragger>
+      </Form.Item>
 
         <Form.Item
           name="agreement"
@@ -129,7 +160,7 @@ export default function Editpost() {
             },
           ]}
         >
-          <Checkbox defaultChecked>
+          <Checkbox>
             I have read and agreed to{' '}
             <Button
               type="link"
@@ -140,6 +171,12 @@ export default function Editpost() {
               Terms and Conditions{' '}
             </Button>
           </Checkbox>
+        </Form.Item>
+          <TermCondition isOpen={openModal} onCloseModal={() => setOpenModal(false)} />
+        <Form.Item wrapperCol={{ span: 15 }}>
+          <Button loading={loading} type="primary" htmlType="submit" onClick={() => onSubmitPost()} style={{ marginTop: 10 }}>
+            Accept Change
+          </Button>
         </Form.Item>
       </Form>
     </Card>

@@ -88,8 +88,9 @@ function PostDetail() {
                 <Space>
                   The recipe include: 
                   {data[0]?.ingredients.length !== 0
-                    ? data[0]?.ingredients?.map((ingredient:any) => (
+                    ? data[0]?.ingredients?.map((ingredient:any,index:any) => (
                         <div
+                          key={index}
                           style={{
                             backgroundColor: '#f4f4f5',
                             color: '#9ba1af',

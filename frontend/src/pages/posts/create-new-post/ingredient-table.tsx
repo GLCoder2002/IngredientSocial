@@ -81,6 +81,6 @@ const StyledImage = styled(Image)<{ visible: boolean }>`
   position: absolute;
   top: 0;
   left: 0;
-  display: ${(props) => (props.visible ? 'block' : 'none')};
+  display: ${(props) => (props?.visible ? 'block' : 'none')};
   z-index: 1;
 `;

@@ -14,6 +14,7 @@ const { Title } = Typography
 export default function CreatePost() {
   const [form] = Form.useForm()
   const navigate = useRoleNavigate()
+  const [loading, setLoading] = useState(false)
   const [selectedIngredients, setSelectedIngredients] = useState<any>([])
   const [editorState, setEditorState] = useState('')
   const [openModal, setOpenModal] = useState(false)
@@ -40,15 +41,22 @@ export default function CreatePost() {
     if (!form.getFieldValue('agreement')) {
       return message.error('You must agree to the terms and conditions')
     }
-
+    if(selectedIngredients.length === 0){
+      return message.error('At least one ingredient should be selected')
+    }
+    if(video.length === 0){
+      return message.error('Video required for specific instruction')
+    }
+    setLoading(true)
     await Http.post('/api/v1/posts/create', postForm)
       .then(res => {
         message.success('Upload post successfully!!')
         navigate('/')
       })
       .catch(error => message.error(error.message + '. Please try again'))
+      .finally(()=>setLoading(false))
   }
-
+  
   const windowWidth = useWindowSize()
 
   return (
@@ -90,9 +98,6 @@ export default function CreatePost() {
         <TextEditor editorState={editorState} setEditorState={setEditorState}/>
         </Form.Item>
         <Form.Item name="ingredient"
-        //  rules={[
-        //     { required: true, message: "Please select your ingredients for the recipe" },
-        //   ]}
         required
         label="Ingredient">
         <IngredientTable setIngredientSelected={setSelectedIngredients} />
@@ -148,7 +153,7 @@ export default function CreatePost() {
         </Form.Item>
         <TermCondition isOpen={openModal} onCloseModal={() => setOpenModal(false)} />
         <Form.Item wrapperCol={{ span: 15 }}>
-          <Button type="primary" htmlType="submit" onClick={() => onSubmitPost()} style={{ marginTop: 10 }}>
+          <Button loading={loading} type="primary" htmlType="submit" onClick={() => onSubmitPost()} style={{ marginTop: 10 }}>
             Post
           </Button>
         </Form.Item>
