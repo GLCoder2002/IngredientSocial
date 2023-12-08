@@ -1,3 +1,4 @@
+import { io } from "../utils/socket"
 import Comment from "../models/Comment"
 import Post from "../models/Post"
 import User from "../models/User"
@@ -27,7 +28,7 @@ export const createComment = async (req: any, res: any, next: any) => {
     savedComment.userId = user
 
     console.log(savedComment)
-
+    io.emit('comments', { action: 'create', postId: commentBody.postId, comment: savedComment })
     res.status(200).json({
       success: true,
       message: 'Comment is created successfully',

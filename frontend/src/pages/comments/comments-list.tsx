@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Comment from './comment'
 import { Http } from 'api/http'
 import { handleFilter } from 'utils/handleFilter'
+import { useSocket } from 'socket.io'
 interface DataType {
   gender?: string
   name: {
@@ -25,6 +26,7 @@ function CommentsList({ id, updatePost }:{id:any,updatePost:any}) {
   const [initLoading, setInitLoading] = useState(true)
   const [list, setList] = useState<DataType[]>([])
   const [filter, setFilter] = useState('new')
+  const {appSocket} = useSocket()
 
   const updateComments = (info:any) => {
     return setList([info.comment, ...list])
@@ -37,23 +39,22 @@ function CommentsList({ id, updatePost }:{id:any,updatePost:any}) {
       setList(res.data.data)
     })
   }, [updatePost, filter])
-
   
   const onClickFilter = (val: any) => {
     setFilter(val)
   }
 
-  // useEffect(() => {
-  //   appSocket.on('comments', data => {
-  //     if (data.postId === id) {
-  //       updateComments(data)
-  //     }
-  //   })
+  useEffect(() => {
+    appSocket.on('comments', (data:any) => {
+      if (data.postId === id) {
+        updateComments(data)
+      }
+    })
 
-  //   return () => {
-  //     appSocket.off('comments')
-  //   }
-  // }, [updateComments])
+    return () => {
+      appSocket.off('comments')
+    }
+  }, [updateComments])
 
 
   const moreItems: MenuProps['items'] = [

@@ -255,9 +255,7 @@ export const getPost = async (req: any, res: any, next: any) => {
         select: ['username', 'avatar', 'email', 'role']
       })
       .populate('ingredients')
-    if (post?.meta?.views !== undefined) {
-      post?.meta?.views + 1
-    }
+    post!.meta!.views = post!.meta!.views + 1
     await post?.save()
     res.status(200).json({
       success: true,
@@ -394,7 +392,7 @@ export const disLikePost = async (req: any, res: any, next: any) => {
   }
 }
 
-export const omitVoteIdea = async (req: any, res: any, next: any) => {
+export const omitVotePost = async (req: any, res: any, next: any) => {
   try {
     const { postId } = req.body
     const userId = req.payload.user.id

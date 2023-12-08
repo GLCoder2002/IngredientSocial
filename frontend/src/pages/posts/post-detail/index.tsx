@@ -52,7 +52,7 @@ function PostDetail() {
     .finally(() => setLoading(false))
     getPost()
   }, [])
-
+  
   const updateCommentLength = (info : any) => {
     if (info.action === 'create') {
       return setCommentCount(commentCount + 1)
@@ -63,7 +63,7 @@ function PostDetail() {
 
   useEffect(() => {
     appSocket?.on('comments', (data:any) => {
-      if (data.ideaId === id) {
+      if (data[0].postId === id) {
         updateCommentLength(data)
       }
     })
@@ -71,7 +71,7 @@ function PostDetail() {
       appSocket?.off('comments')
     }
   }, [updateCommentLength])
-
+  console.log(data)
   return (
     <> 
     {!loading ? (
@@ -125,11 +125,12 @@ function PostDetail() {
                 }
               </Space>
             </Space>
-            <MenuBar commentCount={commentCount}
+            <MenuBar 
+              commentCount={commentCount}
               postId={id}
               handleShowComment={handleShowComment}
               name={
-                data[0]?.title
+              data[0]?.title
               }/>
           </Content>
             <Content>
@@ -149,6 +150,7 @@ function PostDetail() {
                 <CreateComment user={
                     {avatar, username}
                   }
+                  postId={id}
                   setUpdatePost={setUpdatePost}
                   email={
                     data[0]?.posterId?.email

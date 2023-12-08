@@ -40,7 +40,6 @@ function Comment({ item, loading }:{item:any,loading:any}) {
   const handleViewProfile = (id:any) => {
       navigate(`/profile?id=${id}`)
   }
-
   let action = [
     <IconText id={item._id} icon={LikeOutlined} text="0" key="list-vertical-like-o" />,
     <IconText id={item._id} icon={DislikeOutlined} text="0" key="list-vertical-star-o" />,

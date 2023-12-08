@@ -7,7 +7,7 @@ import useWindowSize from 'utils/useWindowSize'
 import { Http } from 'api/http'
 interface Commentprops {
   user: any
-  postId?: string
+  postId?: any
   setComments?: void
   setCount?: void
   email?: string
@@ -52,8 +52,9 @@ export default function CreateComment(props: Commentprops) {
         return message.success('Your comment are handled')
       })
       .catch((error:any) => message.error(`Something went wrong: ${error.response?.data?.message}`))
+      console.log(payload)
   }
-
+  
   const _handleKeyDown = (e:any) => {
     if (e.key === 'Enter') {
       handleSubmitComment()
