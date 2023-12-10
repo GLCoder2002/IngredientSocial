@@ -17,12 +17,11 @@ import PostDetail from "pages/posts/post-detail"
 import EditPost from "pages/posts/edit-post"
 import DashboardAdmin from "pages/dashboard"
 import IngredientManage from "pages/ingredients"
-//import AdvanceSearch from "components/search-field/advanceSearch"
 import CategoryManager from "pages/categories"
 import CategoryDetails from "pages/categories/category-details"
 import AccountManager from "pages/account_manage"
 import OtherProfile from "pages/user-profile/otherProfile"
-import UserList from "pages/user-profile/userList"
+import AdvanceSearch from "pages/home/advanceSearch"
 
 export default function App() {
   const navigate = useNavigate()
@@ -100,7 +99,7 @@ export default function App() {
           <Route path="post" element={<PostDetail />} />
           <Route path="post/edit" element={<EditPost/>} /> 
           <Route path="profile" element={<OtherProfile/>} /> 
-          {/* <Route path="advance" element={<AdvanceSearch/>} />  */}
+          <Route path="advance" element={<AdvanceSearch/>} /> 
         </Route>
 
         <Route
@@ -125,7 +124,7 @@ export default function App() {
           <Route path="category/:id" element={<CategoryDetails />} />
           <Route path="users" element={<AccountManager/>} />
           <Route path="profile" element={<OtherProfile/>} />
-          {/* <Route path="advance" element={<AdvanceSearch />} /> */}
+          <Route path="advance" element={<AdvanceSearch />} />
         </Route>
 
         <Route path="*" element={<Navigate to={role ? `/${role}` : '/'} replace />} />

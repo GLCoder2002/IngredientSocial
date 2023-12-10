@@ -36,7 +36,7 @@ function Login() {
           </Space>
         </Space>
       </Row>
-      <AppFooter/>
+      {/* <AppFooter/> */}
     </>
   )
 }

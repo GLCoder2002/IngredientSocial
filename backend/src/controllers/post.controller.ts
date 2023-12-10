@@ -223,28 +223,31 @@ export const getAllPostsOfUser = async (req: any, res: any, next: any) => {
 
 export const getAllPostsByIngredients = async (req: any, res: any, next: any) => {
   try {
-    const ingredientId = req.query.uid
+    let ingredientIds = req.query.ingredients;
 
-    const ingredient = await Ingredient.findById(ingredientId)
-    if (!ingredient) {
-      return next(new apiErrorResponse(`Not found ingredient id ${ingredientId}`, 500))
+    if (!ingredientIds) {
+      return next(new apiErrorResponse('Invalid or missing ingredient IDs', 400));
     }
-    const posts = await Post.find({ ingredients: { $in: [ingredient._id] } }) //$all
+    if (ingredientIds?.length) {
+      ingredientIds = ingredientIds?.split(',')?.map(i => new mongoose.Types.ObjectId(i))
+    }
+    const posts = await Post.find({ ingredients: { $in: ingredientIds } })
       .select('title likes dislikes meta createdAt comments content video')
       .populate({
         path: 'posterId',
         select: ['username', 'avatar', 'email', 'role'],
       })
-      .populate('ingredients')
+      .populate('ingredients');
+
     res.status(200).json({
       success: true,
       count: posts.length,
       data: posts,
-    })
+    });
   } catch (err: any) {
-    return next(new apiErrorResponse(`${err.message}`, 500))
+    return next(new apiErrorResponse(`${err.message}`, 500));
   }
-}
+};
 
 export const getPost = async (req: any, res: any, next: any) => {
 
@@ -269,12 +272,6 @@ export const getPost = async (req: any, res: any, next: any) => {
 export const getDataSuggestion = async (req: any, res: any, next: any) => {
   try {
     const posts = await Post.find().select('title')
-    const users = await User
-      .find()
-      .select('username')
-    const ingredients = await Ingredient
-      .find()
-      .select('username')
     res.status(200).json({
       success: true,
       data: posts,

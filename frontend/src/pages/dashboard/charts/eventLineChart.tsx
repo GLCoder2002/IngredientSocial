@@ -70,7 +70,7 @@ export default function EventLineChart() {
             Posts trend in a week
           </Title>
           <LineChart width={500}
-            height={300}
+            height={400}
             data={
               allWeekData.sort((a, b) => parseFloat(a.weekNumber) - parseFloat(b.weekNumber))
             }

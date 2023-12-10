@@ -1,17 +1,17 @@
-import { LogoutOutlined, UserOutlined } from "@ant-design/icons";
-import { Avatar, ConfigProvider, Dropdown, Layout, MenuProps, Row, Space, Typography } from "antd";
+import { LogoutOutlined, SearchOutlined, UserOutlined } from "@ant-design/icons";
+import { Avatar, Button, ConfigProvider, Dropdown, Layout, MenuProps, Row, Space, Typography } from "antd";
 import { useSnackbar } from "notistack";
 import useWindowSize from "../../utils/useWindowSize";
 import { Link, useNavigate } from "react-router-dom";
-import SearchField from "../../components/search-field/searchField";
 import { userCredential, userStore } from "pages/auth/userStore";
-import { useSubscription } from "libs/global-state-hooks";
+import { createSubscription, useSubscription } from "libs/global-state-hooks";
 import useRoleNavigate from "libs/role-navigate";
+import AutoSearch from "components/search-field/autoCompleteSearch";
 
 const { Header } = Layout;
 
 const { Text } = Typography;
-
+export const postCount = createSubscription({ number: 0 })
 function AppHeader() {
   const {
     state: { logout },
@@ -44,7 +44,6 @@ function AppHeader() {
       icon: <LogoutOutlined style={{ fontSize: 20 }} />,
     },
   ]
-
   const handleLogout = () => {
     logout()
     navigator('/login')
@@ -79,8 +78,8 @@ function AppHeader() {
       }}
     >
       <Header
-        style={{
-          background: '222831',
+         style={{
+          background: '#2c3e50',
           display: 'flex',
           position: 'sticky',
           zIndex: 2,
@@ -105,12 +104,12 @@ function AppHeader() {
             <Link to={'/'} style={{ marginRight: 20, margin: '5px', display: 'contents' }}>
               <Avatar size='large' style={{ background: 'white' }} src='../assets/logo.svg' alt="Logo" />
             </Link>
-          <Typography.Title level={3} style={{ margin: 0, color:'white', fontFamily: 'Arial, sans-serif' }}>
+          <Typography.Title level={3} style={{ margin: 0, color:'#ecf0f1', fontFamily: 'Arial, sans-serif' }}>
             Social Ingredient
            </Typography.Title>
           </Space>
           <Space style={{ height: '40px', width: '500px', padding: '0 5px', display: 'flex', alignItems: 'center' }}>
-            <SearchField />
+            <AutoSearch/>
           </Space>
           <Space>
             <Dropdown className="d-flex center" menu={{ items: userMenu }} trigger={['click']}>

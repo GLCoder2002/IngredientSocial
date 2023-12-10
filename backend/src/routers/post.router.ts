@@ -1,4 +1,4 @@
-import { createPost, deletePost, disLikePost, editPost, getAllPosts, getAllPostsOfUser, getDataSuggestion, getPost, getPostLikes, getTotalPost, likePost, postByTime } from '../controllers/post.controller'
+import { createPost, deletePost, disLikePost, editPost, getAllPosts, getAllPostsByIngredients, getAllPostsOfUser, getDataSuggestion, getPost, getPostLikes, getTotalPost, likePost, postByTime } from '../controllers/post.controller'
 import express from 'express'
 import { authProtect, authorize } from '../middlewares/auth'
 import { uploadMulter } from '../utils/cloudconfig'
@@ -18,3 +18,4 @@ postRouter.put('/like', authProtect, likePost)
 postRouter.delete('/delete/:postId', authProtect, deletePost)
 postRouter.get('/postsOfUser/:posterId', authProtect, getAllPostsOfUser)
 postRouter.get('/postReaction', authProtect, getPostLikes)
+postRouter.get('/findByIngredients', authProtect, getAllPostsByIngredients)

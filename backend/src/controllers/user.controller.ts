@@ -117,7 +117,6 @@ export const deleteUser = async (req: any, res: any, next: any) => {
     if (!deletedUser) {
       return next(new apiErrorResponse(`Could not update user`, 400))
     }
-    // updateAccountNumberRealTime()
     return res.status(200).json({ success: true, message: 'User deleted successfully', user: deletedUser })
   } catch (error:any) {
     next(new apiErrorResponse(`${error.message}`, 500))

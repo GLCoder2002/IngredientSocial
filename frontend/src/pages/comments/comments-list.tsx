@@ -38,6 +38,7 @@ function CommentsList({ id, updatePost }:{id:any,updatePost:any}) {
       setInitLoading(false)
       setList(res.data.data)
     })
+    console.log(id)
   }, [updatePost, filter])
   
   const onClickFilter = (val: any) => {
@@ -105,7 +106,7 @@ function CommentsList({ id, updatePost }:{id:any,updatePost:any}) {
           pageSize: 5,
         }}
         dataSource={list}
-        style={{ width: '100%' }}
+        style={{ width: '100%', paddingLeft:'10px' }}
         renderItem={item => (
           <Comment item={item} loading={item.loading} />
         )}

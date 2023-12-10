@@ -37,7 +37,7 @@ function MenuFilter({ setFilter, filter, totalPost }:any) {
   return (
     <>
       <Col>
-        <p style={{ fontSize: '19px', fontWeight: '400', marginBottom: '3px 0' }}>{totalPost} Posts</p>
+        <p style={{ color:'black',fontSize: '19px', fontWeight: '400', marginBottom: '3px 0' }}>{totalPost} Posts</p>
       </Col>
       <Col style={{ float: 'right', width: '100%', justifyContent: 'end', fontSize: '15px', display: display }}>
         <Radio.Group defaultValue={filter} buttonStyle="solid" style={{}} onChange={e => onClickFilter(e.target.value)}>

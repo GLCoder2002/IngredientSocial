@@ -52,7 +52,7 @@ function PostDetail() {
     .finally(() => setLoading(false))
     getPost()
   }, [])
-  
+  console.log(data)
   const updateCommentLength = (info : any) => {
     if (info.action === 'create') {
       return setCommentCount(commentCount + 1)
@@ -63,7 +63,7 @@ function PostDetail() {
 
   useEffect(() => {
     appSocket?.on('comments', (data:any) => {
-      if (data[0].postId === id) {
+      if (data[0]?.postId === id) {
         updateCommentLength(data)
       }
     })
@@ -87,7 +87,7 @@ function PostDetail() {
                 <PostDetailInfo item={data[0]}></PostDetailInfo>
                 <Space>
                   The recipe include: 
-                  {data[0]?.ingredients.length !== 0
+                  {data[0]?.ingredients?.length !== 0
                     ? data[0]?.ingredients?.map((ingredient:any,index:any) => (
                         <div
                           key={index}
@@ -99,7 +99,7 @@ function PostDetail() {
                             border: '2px',
                           }}
                         >
-                          {ingredient.name} 
+                          {ingredient?.name} 
                         </div>
                       ))
                     : null}

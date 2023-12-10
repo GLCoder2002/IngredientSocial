@@ -3,7 +3,6 @@ import { generateJWToken, verifyJWTToken } from '../helpers/token.helper'
 import User from '../models/User'
 import apiErrorResponse from '../utils/apiErrorResponse'
 
-// @route POST /api/v1/auth/login
 export const login = async (req: any, res: any, next: any) => {
   try {
     const { username, password } = req.body
@@ -20,7 +19,6 @@ export const login = async (req: any, res: any, next: any) => {
   }
 }
 
-// @route POST /api/v1/auth/signUp
 export const signUp = async (req: any, res: any, next: any) => {
   try {
     const { username, password, role, birthday, email, gender } = req.body
@@ -150,7 +148,6 @@ export const verifyAccessToken = async (req: any, res: any, next: any) => {
   }
 }
 
-// @route POST /api/v1/auth/refreshToken -- call for refresh the access token
 export const refreshToken = async (req: any, res: any, next: any) => {
   try {
     const refreshToken = await User.findOne({ _id: req.payload.user.id }).select('token')

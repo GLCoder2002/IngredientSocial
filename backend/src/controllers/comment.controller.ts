@@ -18,21 +18,21 @@ export const createComment = async (req: any, res: any, next: any) => {
       return next(new apiErrorResponse('Lack of required information.', 400))
     }
 
-    const data = { content: commentBody.content, postId: commentBody.postId}
+    const data = { content: commentBody.content, postId: commentBody?.postId}
     const newComment = { ...data, userId: req.payload?.user?.id }
     let savedComment = await Comment.create(newComment)
-
-    const user = await User.findById(req.payload?.user?.id).select('comments name email avatar role')
+    const post = await Post.findById(commentBody?.postId).select('comments createdAt')
+    const user = await User.findById(req.payload?.user?.id).select('comments username email avatar role')
     user?.comments!.push(savedComment._id)
+    post?.comments!.push(savedComment._id)
     user?.save()
+    post?.save()
     savedComment.userId = user
-
-    console.log(savedComment)
-    io.emit('comments', { action: 'create', postId: commentBody.postId, comment: savedComment })
+    io.emit('comments', { action: 'create', postId: commentBody?.postId, comment: savedComment })
     res.status(200).json({
       success: true,
       message: 'Comment is created successfully',
-      Comment: savedComment,
+      comment: savedComment,
     })
   } catch (err:any) {
     return next(new apiErrorResponse(`${err.message}`, 500))
@@ -90,7 +90,6 @@ export const getAllCommentsOfUser = async (req: any, res: any, next: any) => {
         path: 'userId',
         select: ['username', 'avatar', 'email', 'role'],
       })
-      .populate('categories')
     res.status(200).json({
       success: true,
       count: comments.length,
@@ -153,32 +152,42 @@ export const editComment = async (req: any, res: any, next: any) => {
 
     await updatedComment.save()
 
-    res.status(202).json({ message: 'Comment succesfully updated!', updatedComment })
+    res.status(202).json({ message: 'Comment successfully updated!', updatedComment })
   } catch (error:any) {
     return next(new apiErrorResponse(`${error.message}`, 500))
   }
 }
 
-// export const likeComment = async (req: any, res: any, next: any) => {
-//   try {
-//     const { commentId } = req.params
-//     let comment = await Comment.findById(commentId)
-//     comment.like = +comment.like + 1
-//     await comment.save()
-//     res.status(200).json({ success: true, message: 'Comment liked!', comment })
-//   } catch (error) {
-//     return next(new apiErrorResponse(`${error.message}`, 500))
-//   }
-// }
+export const likeComment = async (req: any, res: any, next: any) => {
+  try {
+    const { commentId } = req.params;
+    let comment = await Comment.findById(commentId);
 
-// export const disLikeComment = async (req: any, res: any, next: any) => {
-//   try {
-//     const { commentId } = req.params
-//     let comment = await Comment.findById(commentId)
-//     comment.like = +comment.like - 1
-//     await comment?.save()
-//     res.status(200).json({ success: true, message: 'Comment liked!', comment })
-//   } catch (error:any) {
-//     return next(new apiErrorResponse(`${error.message}`, 500))
-//   }
-// }
+    if (comment) {
+      comment.like = (comment.like as number || 0) + 1;
+      await comment.save();
+      res.status(200).json({ success: true, message: 'Comment liked!', comment });
+    } else {
+      res.status(404).json({ success: false, message: 'Comment not found' });
+    }
+  } catch (error: any) {
+    return next(new apiErrorResponse(`${error.message}`, 500));
+  }
+};
+
+export const disLikeComment = async (req: any, res: any, next: any) => {
+  try {
+    const { commentId } = req.params;
+    let comment = await Comment.findById(commentId);
+
+    if (comment) {
+      comment.like = Math.max((comment.like as number || 0) - 1, 0);
+      await comment.save();
+      res.status(200).json({ success: true, message: 'Comment disliked!', comment });
+    } else {
+      res.status(404).json({ success: false, message: 'Comment not found' });
+    }
+  } catch (error: any) {
+    return next(new apiErrorResponse(`${error.message}`, 500));
+  }
+};

@@ -56,7 +56,7 @@ const UserLayout = ({ children }: { children: any }) => {
         </Content>
         <RightSideBar />
       </Layout>
-      <AppFooter/>
+      {/* <AppFooter/> */}
     </>
   );
 };

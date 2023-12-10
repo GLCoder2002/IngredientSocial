@@ -73,7 +73,7 @@ const AdminLayout = ({ children }: { children: any }) => {
           {children}
         </Content>
       </Layout>
-      <AppFooter/>
+      {/* <AppFooter/> */}
     </>
   );
 };

@@ -101,7 +101,7 @@ function IngredientClassifyPieChart() {
               Number posts of each ingredients
             </Title>
 
-            <PieChart width={500} height={300}>
+            <PieChart width={500} height={400}>
               <Pie
                 data={formattedData}
                 cx="50%"
