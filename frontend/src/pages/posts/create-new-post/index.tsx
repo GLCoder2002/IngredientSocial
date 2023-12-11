@@ -35,7 +35,7 @@ export default function CreatePost() {
     if (!form.getFieldValue('title')) {
       return message.error('Please fill the required fields')
     }
-    if (form.getFieldValue('title').length < 30) {
+    if (form.getFieldValue('title').length < 10) {
       return message.error('Your title is too spacing')
     }
     if (!form.getFieldValue('agreement')) {
@@ -81,7 +81,7 @@ export default function CreatePost() {
           name="title"
           rules={[
             { required: true, message: "Please input your post's title" },
-            { type: 'string', min: 30, message: 'Your title is too spacing, at least 30 characters' },
+            { type: 'string', min: 10, message: 'Your title is too spacing, at least 30 characters' },
           ]}
           label="Title"
         >

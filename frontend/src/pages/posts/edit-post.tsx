@@ -20,6 +20,7 @@ export default function EditPost() {
   const id = query.get('id')
   const [editorState, setEditorState] = useState<any>()
   const [selectedIngredients, setSelectedIngredients] = useState<any>([])
+  const [ingredientDefault, setIngredientDefault] = useState<any>([])
   const [openModal, setOpenModal] = useState(false)
   const [loading, setLoading] = useState(false)
   const [video, setVideo] = useState<any>([])
@@ -38,6 +39,7 @@ export default function EditPost() {
         .then(res => {
           setData([res.data.data])
           setEditorState(res.data.data.content)
+          setIngredientDefault([res.data.data.ingredients])
         })
         .catch(error => message.error('Failed to fetch post!'))
     getPost()
@@ -58,7 +60,7 @@ export default function EditPost() {
     if (!form.getFieldValue('title')) {
       return message.error('Please fill the required fields')
     }
-    if (form.getFieldValue('title').length < 30) {
+    if (form.getFieldValue('title').length < 10) {
       return message.error('Your title is too spacing')
     }
     if (!form.getFieldValue('agreement')) {
@@ -101,7 +103,7 @@ export default function EditPost() {
         labelAlign="left"
       >
         <Form.Item name="title" label="Title" initialValue={data[0]?.title}
-        rules={[{ required: true, message: "Please input your post's title" }, { type: 'string', min: 30, message: "Your title is too sparsing, at least 30 characters" }]} 
+        rules={[{ required: true, message: "Please input your post's title" }, { type: 'string', min: 10, message: "Your title is too sparsing, at least 30 characters" }]} 
         >
           <Input
             style={{ lineHeight: 2.15 }}
@@ -119,7 +121,7 @@ export default function EditPost() {
         <Form.Item name="ingredient"
         required
         label="Ingredient">
-        <IngredientTable setIngredientSelected={setSelectedIngredients} />
+        <IngredientTable setIngredientSelected={setSelectedIngredients} default={ingredientDefault} />
         </Form.Item>
         
         <Form.Item

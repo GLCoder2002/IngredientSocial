@@ -52,7 +52,6 @@ function PostDetail() {
     .finally(() => setLoading(false))
     getPost()
   }, [])
-  console.log(data)
   const updateCommentLength = (info : any) => {
     if (info.action === 'create') {
       return setCommentCount(commentCount + 1)
@@ -200,7 +199,7 @@ function ReadMore({children} : {
 }) {
   const text: string = children
   const [isReadMore, setIsReadMore] = useState(true)
-  const textDisplay: string = isReadMore ? text?.slice(0, 1500) : text
+  const textDisplay: string = isReadMore ? text?.slice(0, 150) : text
   const toggleReadMore = () => {
     setIsReadMore(!isReadMore)
   }

@@ -41,7 +41,7 @@ export default function IngredientTable({setIngredientSelected}:any) {
 
   return (
       <>
-      <Card loading={loading}>
+      <Card loading={loading} style={{overflow:'auto', height:'300px'}}>
       <Input
       style={{ marginBottom: 16 }}
       allowClear

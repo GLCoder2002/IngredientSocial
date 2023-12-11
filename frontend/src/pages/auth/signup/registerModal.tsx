@@ -28,7 +28,10 @@ const RegisterModal = ()=>{
       message.error(`Some thing went wrong sign up fail, ${error?.message}`)
     }
   })
-  .finally(()=>setLoading(false))
+  .finally(()=>{
+    setLoading(false)
+    form.resetFields()
+  })
 }
   
   return(

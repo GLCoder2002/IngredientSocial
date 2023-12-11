@@ -39,6 +39,7 @@ const LatestPostList: React.FC = () => {
   return (
     <>
       <List
+        style={{overflow:'auto', height:'300px'}}
         itemLayout="vertical"
         size="large"
         loading={initLoading}

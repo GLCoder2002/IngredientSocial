@@ -24,7 +24,7 @@ export const signUp = async (req: any, res: any, next: any) => {
     const { username, password, role, birthday, email, gender } = req.body
     const isUserExists = await User.findOne({ email: email })
     if (isUserExists) {
-      next(new apiErrorResponse('Email is taken', 400))
+      next(new apiErrorResponse('This account is already exist, please try another', 400))
     }
 
     const passwordHash = await bcryptHash(password)
@@ -49,7 +49,7 @@ export const editAccount = async (req: any, res: any, next: any) => {
     const isUserExists = await User.find({ email: email })
 
     if (isUserExists?.length > 1) {
-      next(new apiErrorResponse('Email is taken', 400))
+      next(new apiErrorResponse('The account is already exist, please try another', 400))
     }
 
     if (password) {

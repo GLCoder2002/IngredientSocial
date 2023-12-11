@@ -12,10 +12,11 @@ function PointInfoModal({ isOpen, onCloseModal, likers, unlikers }:PointInfoModa
     <div style={{ textAlign: 'center', padding: 0, margin: 0, display: 'flex' }}>
       <p style={{ display: 'contents' }}>
         <SmileOutlined style={{ fontSize: 20, marginRight: 8 }} />
-        No one :)))
+        No one yet
       </p>
     </div>
-  )
+  )  
+  console.log(likers)
   return (
     <>
       <Modal
@@ -40,8 +41,8 @@ function PointInfoModal({ isOpen, onCloseModal, likers, unlikers }:PointInfoModa
               <List.Item>
                 <List.Item.Meta
                   style={{ marginBlockEnd: 0 }}
-                  avatar={<Avatar style={{ background: 'black' }} src={`${item['avatar']}`} />}
-                  description={<a href="https://ant.design">{item['name']}</a>}
+                  avatar={<Avatar style={{ background: 'black' }} src={item.avatar} />}
+                  description={<a href="https://ant.design">{item.username}</a>}
                 />
               </List.Item>
             )}
@@ -57,8 +58,8 @@ function PointInfoModal({ isOpen, onCloseModal, likers, unlikers }:PointInfoModa
               <List.Item>
                 <List.Item.Meta
                   style={{ marginBlockEnd: 0, alignItems: 'center' }}
-                  avatar={<Avatar style={{ background: 'black' }} src={`${item['avatar']}`} />}
-                  description={<a href="https://ant.design">{item['name']}</a>}
+                  avatar={<Avatar style={{ background: 'black' }} src={item.avatar} />}
+                  description={<a href="https://ant.design">{item.username}</a>}
                 />
               </List.Item>
             )}
